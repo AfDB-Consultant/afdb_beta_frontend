@@ -10,7 +10,7 @@
 
 <br/>
 
-<a href="DOCUMENTATION.html">
+<a href="https://afdb-consultant.github.io/afdb_beta_frontend/">
   <img src="https://img.shields.io/badge/View_Full_Documentation-006837?style=for-the-badge&logo=bookstack&logoColor=white" alt="View Documentation" />
 </a>
 
@@ -105,7 +105,7 @@ Open [http://localhost:3000](http://localhost:3000)
 
 The full security implementation proposal is available as an interactive HTML document:
 
-**[View Complete Documentation →](DOCUMENTATION.html)**
+**[View Complete Documentation →](https://afdb-consultant.github.io/afdb_beta_frontend/)**
 
 The documentation covers:
 1. Executive Summary
