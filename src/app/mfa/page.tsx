@@ -5,32 +5,44 @@ import AuthLayout from '@/components/layout/AuthLayout';
 import { authUtils } from '@/lib/auth';
 import api from '@/lib/api';
 import { LoginResponse } from '@/types';
+import { ShieldCheck, Loader2, ArrowLeft, KeyRound, RefreshCw } from 'lucide-react';
 
 function MfaContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const userId = searchParams.get('userId') || '';
   const [code, setCode] = useState('');
+  const [backupCode, setBackupCode] = useState('');
+  const [useBackup, setUseBackup] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [remainingCodes, setRemainingCodes] = useState<number | null>(null);
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (code.length !== 6) { setError('Enter the full 6-digit code'); return; }
+    if (!useBackup && code.length !== 6) { setError('Enter the full 6-digit code'); return; }
+    if (useBackup && backupCode.length < 4) { setError('Enter a valid backup code'); return; }
     setLoading(true);
     setError('');
 
     try {
-      const { data } = await api.post<LoginResponse>('/auth/verify-mfa', { userId, token: code });
+      const payload = useBackup
+        ? { userId, backupCode: backupCode.replace(/-/g, '').trim() }
+        : { userId, token: code };
+
+      const { data } = await api.post<LoginResponse>('/auth/verify-mfa', payload);
       if (data.data?.accessToken && data.data?.user) {
         authUtils.setAuthData(
           { accessToken: data.data.accessToken, refreshToken: data.data.refreshToken! },
           data.data.user
         );
+        if (data.data.remainingBackupCodes !== undefined) {
+          setRemainingCodes(data.data.remainingBackupCodes);
+        }
         router.push('/dashboard');
       }
     } catch {
-      setError('Invalid verification code. Please try again.');
+      setError(useBackup ? 'Invalid backup code. Each code can only be used once.' : 'Invalid verification code. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -38,58 +50,107 @@ function MfaContent() {
 
   return (
     <AuthLayout>
-      <div className="mb-8 text-center">
-        <div className="w-16 h-16 bg-afdb-green/10 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg className="w-8 h-8 text-afdb-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-        </div>
-        <h2 className="text-2xl font-bold text-afdb-navy">Two-Factor Authentication</h2>
-        <p className="text-gray-500 mt-2">Enter the 6-digit code from your authenticator app</p>
+      <div className="mb-6 text-center lg:text-left">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2" style={{ fontFamily: 'Afacad, sans-serif' }}>
+          Two-Factor Authentication
+        </h1>
+        <p className="text-sm" style={{ color: 'rgb(110, 130, 165)', fontFamily: 'Afacad, sans-serif' }}>
+          {useBackup
+            ? 'Enter one of your backup codes to verify your identity'
+            : 'Enter the 6-digit code from your authenticator app'}
+        </p>
       </div>
 
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm text-center">{error}</div>
+        <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl text-red-700 dark:text-red-400 text-sm text-center">
+          {error}
+        </div>
       )}
 
-      <form onSubmit={handleVerify} className="space-y-6">
-        <div className="flex justify-center">
-          <input
-            type="text"
-            inputMode="numeric"
-            maxLength={6}
-            value={code}
-            onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-            placeholder="000000"
-            className="w-48 text-center text-3xl font-mono tracking-[0.5em] py-4 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-afdb-green focus:ring-2 focus:ring-afdb-green/20 transition-all"
-            autoFocus
-          />
-        </div>
+      <div className="py-5 px-6 rounded-[15px] sm:rounded-[20px] bg-white dark:bg-[#0a0a0a] shadow-[-5px_5px_50px_-5px_#e1e1e1] dark:shadow-none border border-gray-100 dark:border-gray-800">
+        <form onSubmit={handleVerify} className="space-y-6">
+          {/* Icon */}
+          <div className="flex justify-center mb-2">
+            <div className="w-16 h-16 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
+              {useBackup
+                ? <KeyRound className="w-8 h-8 text-primary" />
+                : <ShieldCheck className="w-8 h-8 text-primary" />}
+            </div>
+          </div>
 
-        <button
-          type="submit"
-          disabled={loading || code.length !== 6}
-          className="w-full py-3 bg-afdb-green hover:bg-afdb-green-dark text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-        >
-          {loading ? (
-            <>
-              <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-              Verifying...
-            </>
+          {/* Code input */}
+          {!useBackup ? (
+            <div className="flex justify-center">
+              <input
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                value={code}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+                placeholder="000000"
+                className="w-48 text-center text-3xl font-mono tracking-[0.5em] py-4 border-2 border-gray-200 dark:border-gray-700 dark:bg-[#0c0c0d] dark:text-gray-100 rounded-2xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                autoFocus
+              />
+            </div>
           ) : (
-            'Verify & Continue'
+            <div className="flex justify-center">
+              <input
+                type="text"
+                value={backupCode}
+                onChange={(e) => setBackupCode(e.target.value.toUpperCase())}
+                placeholder="XXXX-XXXX"
+                className="w-56 text-center text-lg font-mono tracking-wider py-4 border-2 border-gray-200 dark:border-gray-700 dark:bg-[#0c0c0d] dark:text-gray-100 rounded-2xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                autoFocus
+              />
+            </div>
           )}
-        </button>
 
-        <button type="button" onClick={() => router.push('/login')} className="w-full text-center text-sm text-gray-500 hover:text-afdb-green transition-colors">
-          Back to login
-        </button>
-      </form>
+          <button
+            type="submit"
+            disabled={loading || (!useBackup && code.length !== 6) || (useBackup && backupCode.length < 4)}
+            className="w-full inline-flex items-center justify-center rounded-full text-sm font-medium bg-white dark:bg-gradient-to-r dark:from-primary/90 dark:to-primary border border-gray-200 dark:border-transparent text-gray-900 dark:text-white shadow-lg hover:bg-gray-50 dark:hover:opacity-90 h-10 px-4 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ fontFamily: 'Afacad, sans-serif' }}
+          >
+            {loading ? (
+              <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Verifying...</>
+            ) : (
+              'Verify & Continue'
+            )}
+          </button>
+
+          {/* Toggle backup/TOTP */}
+          <button
+            type="button"
+            onClick={() => { setUseBackup(!useBackup); setError(''); setCode(''); setBackupCode(''); }}
+            className="w-full text-center text-sm text-gray-500 hover:text-primary transition-colors inline-flex items-center justify-center gap-2"
+          >
+            <RefreshCw className="w-3 h-3" />
+            {useBackup ? 'Use authenticator code instead' : 'Use a backup code instead'}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => router.push('/login')}
+            className="w-full text-center text-sm text-gray-500 hover:text-primary transition-colors inline-flex items-center justify-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to login
+          </button>
+        </form>
+      </div>
+
+      {remainingCodes !== null && remainingCodes <= 3 && (
+        <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl text-amber-700 dark:text-amber-400 text-sm text-center">
+          You have {remainingCodes} backup code{remainingCodes !== 1 ? 's' : ''} remaining. Consider generating new ones.
+        </div>
+      )}
     </AuthLayout>
   );
 }
 
 export default function MfaPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">Loading...</div>}>
       <MfaContent />
     </Suspense>
   );

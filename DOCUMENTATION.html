@@ -1,0 +1,1706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>AfDB Secure Enterprise Portal — Security Implementation Proposal</title>
+<link href="https://fonts.googleapis.com/css2?family=Afacad:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --afdb-green: #006837;
+    --afdb-gold: #C8A951;
+    --afdb-navy: #1B2A4A;
+    --afdb-light: #F4F6F9;
+    --afdb-gray: #6B7280;
+    --afdb-border: #E5E7EB;
+    --afdb-red: #DC2626;
+    --afdb-orange: #F59E0B;
+    --afdb-blue: #2563EB;
+    --pass-green: #16A34A;
+    --code-bg: #1E293B;
+    --code-text: #E2E8F0;
+    --font-primary: 'Afacad', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--font-primary);
+    color: #1F2937; background: #fff; line-height: 1.7; font-size: 15px;
+  }
+
+  /* ── Cover Page ── */
+  .cover {
+    min-height: 100vh; display: flex; flex-direction: column;
+    justify-content: center; align-items: center; text-align: center;
+    background: #fff; color: var(--afdb-navy); padding: 60px 40px;
+    position: relative; overflow: hidden;
+  }
+  .cover::before {
+    content: ''; position: absolute; top: -40%; right: -20%;
+    width: 700px; height: 700px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,104,55,0.08) 0%, transparent 70%);
+    filter: blur(60px); z-index: 0;
+  }
+  .cover::after {
+    content: ''; position: absolute; bottom: -30%; left: -15%;
+    width: 600px; height: 600px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(200,169,81,0.1) 0%, transparent 70%);
+    filter: blur(60px); z-index: 0;
+  }
+  .cover * { position: relative; z-index: 1; }
+  .cover-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 22px; border-radius: 24px; font-size: 11px; text-transform: uppercase;
+    letter-spacing: 2px; color: var(--afdb-green); font-weight: 600; margin-bottom: 36px;
+    background: rgba(0,104,55,0.06); border: 1px solid rgba(0,104,55,0.12);
+    box-shadow: 0 2px 8px rgba(0,104,55,0.06);
+  }
+  .cover-badge svg { width: 14px; height: 14px; }
+  .cover-logo {
+    width: 160px; height: 160px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 16px;
+  }
+  .cover-logo img { width: 100%; height: 100%; object-fit: contain; }
+  .cover h1 {
+    font-size: 48px; font-weight: 800; margin-bottom: 12px;
+    letter-spacing: -1px; line-height: 1.1;
+    background: linear-gradient(135deg, var(--afdb-navy) 0%, #3D5A8C 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .cover h2 {
+    font-size: 18px; font-weight: 400; color: var(--afdb-gray);
+    margin-bottom: 40px; letter-spacing: 0.2px;
+  }
+  .cover-divider { width: 48px; height: 3px; background: linear-gradient(90deg, var(--afdb-green), var(--afdb-gold)); margin: 0 auto 36px; border-radius: 2px; }
+  .cover-meta {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    max-width: 720px; width: 100%; margin: 0 auto;
+  }
+  .cover-meta-item {
+    padding: 20px 16px; border-radius: 16px; text-align: center;
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(229,231,235,0.6);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.04), 0 1px 4px rgba(0,0,0,0.02);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .cover-meta-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.07), 0 2px 8px rgba(0,0,0,0.03);
+  }
+  .cover-meta-item .label {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px;
+    color: var(--afdb-gray); margin-bottom: 8px; font-weight: 500;
+  }
+  .cover-meta-item .value {
+    font-size: 14px; color: var(--afdb-navy); font-weight: 600;
+  }
+  .cover-classification {
+    margin-top: 40px; cursor: pointer; position: relative;
+    display: flex; flex-direction: column; align-items: center; gap: 0;
+  }
+  .cover-classification .scroll-arrow {
+    width: 28px; height: 28px; opacity: 0;
+    animation: scrollBounce 2.4s ease-in-out infinite;
+  }
+  .cover-classification .scroll-arrow:nth-child(1) { animation-delay: 0s; }
+  .cover-classification .scroll-arrow:nth-child(2) { animation-delay: 0.2s; }
+  .cover-classification .scroll-arrow:nth-child(3) { animation-delay: 0.4s; }
+  .cover-classification .scroll-label {
+    margin-top: 10px; font-size: 10px; text-transform: uppercase; letter-spacing: 2px;
+    color: var(--afdb-gray); font-weight: 500; opacity: 0.7;
+    animation: scrollFade 2.4s ease-in-out infinite;
+  }
+  @keyframes scrollBounce {
+    0%, 100% { opacity: 0; transform: translateY(-6px); }
+    30%, 70% { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes scrollFade {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.9; }
+  }
+  /* Decorative floating elements */
+  .cover-decor {
+    position: absolute; z-index: 0; opacity: 0.5;
+    border-radius: 50%; border: 1px solid rgba(0,104,55,0.08);
+    background: rgba(0,104,55,0.02);
+  }
+  .cover-decor-1 { width: 300px; height: 300px; top: 8%; left: -5%; }
+  .cover-decor-2 { width: 200px; height: 200px; bottom: 12%; right: -3%; border-color: rgba(200,169,81,0.1); background: rgba(200,169,81,0.02); }
+  .cover-decor-3 { width: 120px; height: 120px; top: 20%; right: 10%; border-color: rgba(27,42,74,0.06); background: rgba(27,42,74,0.01); }
+
+  /* ── Layout ── */
+  .doc-wrapper { display: flex; max-width: 1400px; margin: 0 auto; position: relative; }
+  .sidebar {
+    width: 280px; min-height: 100vh; position: sticky; top: 0;
+    align-self: flex-start; padding: 30px 20px 0; border-right: 1px solid var(--afdb-border);
+    background: var(--afdb-light); overflow-y: auto; max-height: 100vh;
+    display: flex; flex-direction: column;
+  }
+  .sidebar-title {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 2px;
+    color: var(--afdb-gray); margin-bottom: 16px; font-weight: 600;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .sidebar-title svg { width: 14px; height: 14px; stroke: var(--afdb-gray); }
+  .sidebar-links { flex: 1; }
+  .sidebar a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 12px; font-size: 13px; color: #374151;
+    text-decoration: none; border-radius: 8px; margin-bottom: 2px; transition: all 0.2s;
+    border: 1px solid transparent;
+  }
+  .sidebar a svg { width: 15px; height: 15px; flex-shrink: 0; opacity: 0.55; transition: opacity 0.15s; }
+  .sidebar a:hover {
+    background: rgba(255,255,255,0.7); color: var(--afdb-navy);
+    border-color: rgba(229,231,235,0.6);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.02);
+  }
+  .sidebar a:hover svg { opacity: 0.85; }
+
+  /* ── Sidebar Footer ── */
+  .sidebar-footer {
+    padding: 16px 0; margin-top: auto; border-top: 1px solid var(--afdb-border);
+    font-size: 11px; color: var(--afdb-gray); flex-shrink: 0;
+  }
+  .sidebar-footer-brand {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+  }
+  .sidebar-footer-logo {
+    width: 28px; height: 28px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--afdb-navy) 0%, #2D4470 100%);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .sidebar-footer-brand-text {
+    font-size: 11px; font-weight: 600; color: var(--afdb-navy); line-height: 1.3;
+  }
+  .sidebar-footer-brand-sub {
+    font-size: 10px; font-weight: 400; color: var(--afdb-gray);
+  }
+  .sidebar-footer-meta {
+    display: flex; gap: 12px; font-size: 10px; color: #9CA3AF; margin-top: 6px;
+  }
+  .sidebar-footer-meta span { display: flex; align-items: center; gap: 3px; }
+  .sidebar-footer-meta svg { width: 10px; height: 10px; }
+  .sidebar-footer-meta a:hover { color: #1B2A4A; }
+  .sidebar-footer-meta a:hover svg { stroke: #1B2A4A; }
+
+  /* ── Sidebar Search ── */
+  .sidebar-search { position: relative; margin: 8px 0 14px; }
+  .sidebar-search input {
+    width: 100%; padding: 9px 12px 9px 34px; font-size: 13px; font-family: var(--font-primary);
+    border: 1px solid var(--afdb-border); border-radius: 8px; background: #fff;
+    color: #374151; outline: none; transition: all 0.15s;
+  }
+  .sidebar-search input:focus {
+    border-color: var(--afdb-green); box-shadow: 0 0 0 3px rgba(0,104,55,0.08);
+  }
+  .sidebar-search input::placeholder { color: #9CA3AF; }
+  .sidebar-search-icon {
+    position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+    width: 16px; height: 16px; color: #9CA3AF; pointer-events: none;
+  }
+  .sidebar-search-clear {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    width: 18px; height: 18px; border: none; background: #E5E7EB; border-radius: 50%;
+    cursor: pointer; display: none; align-items: center; justify-content: center;
+    color: #6B7280; font-size: 11px; line-height: 1; padding: 0;
+  }
+  .sidebar-search-clear:hover { background: #D1D5DB; }
+  .search-results {
+    position: absolute; top: 100%; left: 0; right: 0; margin-top: 4px;
+    background: #fff; border: 1px solid var(--afdb-border); border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1); max-height: 320px; overflow-y: auto;
+    z-index: 100; display: none;
+  }
+  .search-results.visible { display: block; }
+  .search-result-item {
+    display: block; padding: 10px 14px; font-size: 12.5px; color: #374151;
+    text-decoration: none; border-bottom: 1px solid #F3F4F6; cursor: pointer;
+    transition: background 0.1s; line-height: 1.4;
+  }
+  .search-result-item:last-child { border-bottom: none; }
+  .search-result-item:hover { background: #F9FAFB; }
+  .search-result-item .sr-section {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--afdb-green); font-weight: 600; margin-bottom: 2px;
+  }
+  .search-result-item .sr-text { color: var(--afdb-gray); }
+  .search-result-item .sr-text mark {
+    background: #FEF3C7; color: #92400E; padding: 0 2px; border-radius: 2px;
+  }
+  .search-no-results { padding: 16px 14px; font-size: 12px; color: var(--afdb-gray); text-align: center; }
+  .content mark.search-highlight {
+    background: #FEF3C7; color: #92400E; padding: 1px 3px; border-radius: 3px;
+    box-shadow: 0 0 0 2px #FEF3C7;
+  }
+  .content { flex: 1; padding: 50px 60px; max-width: 960px; min-width: 0; }
+
+  /* ── Mini TOC (right side) ── */
+  .mini-toc {
+    width: 240px; position: sticky; top: 30px; align-self: flex-start;
+    padding: 24px 20px; border-left: 1px solid var(--afdb-border);
+    max-height: calc(100vh - 60px); overflow-y: auto; flex-shrink: 0;
+  }
+  .mini-toc-label {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px;
+    color: var(--afdb-gray); font-weight: 600; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .mini-toc-label svg { width: 12px; height: 12px; stroke: var(--afdb-gray); }
+  .mini-toc-section {
+    font-size: 12px; font-weight: 600; color: var(--afdb-navy);
+    margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--afdb-border);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .mini-toc-section svg { width: 13px; height: 13px; flex-shrink: 0; }
+  .mini-toc a {
+    display: flex; align-items: center; gap: 6px;
+    padding: 5px 10px; font-size: 12px; color: var(--afdb-gray);
+    text-decoration: none; border-radius: 6px; margin-bottom: 2px;
+    border: 1px solid transparent; transition: all 0.2s; line-height: 1.4;
+  }
+  .mini-toc a:hover {
+    color: var(--afdb-navy);
+    background: rgba(255,255,255,0.7); border-color: rgba(229,231,235,0.6);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.02);
+  }
+  .mini-toc a.active {
+    color: var(--afdb-green); font-weight: 600;
+    background: rgba(240,253,244,0.8); border-color: rgba(22,163,74,0.15);
+    box-shadow: 0 4px 12px rgba(0,104,55,0.06), 0 1px 4px rgba(0,104,55,0.03);
+  }
+  .mini-toc a::before {
+    content: ''; width: 4px; height: 4px; border-radius: 50%;
+    background: var(--afdb-border); flex-shrink: 0; transition: all 0.15s;
+  }
+  .mini-toc a.active::before { background: var(--afdb-green); width: 6px; height: 6px; }
+
+  /* ── Back to Top ── */
+  .back-to-top {
+    position: fixed; bottom: 28px; right: 28px; z-index: 90;
+    display: flex; align-items: center; gap: 5px;
+    padding: 8px 14px; border-radius: 10px;
+    background: rgba(255,255,255,0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(229,231,235,0.6);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+    color: var(--afdb-navy); text-decoration: none;
+    font-size: 12px; font-weight: 500;
+    opacity: 0; pointer-events: none; transform: translateY(8px);
+    transition: opacity 0.3s, transform 0.3s, box-shadow 0.2s;
+  }
+  .back-to-top.visible { opacity: 1; pointer-events: auto; transform: translateY(0); }
+  .back-to-top:hover {
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1), 0 2px 6px rgba(0,0,0,0.05);
+    background: #fff;
+  }
+  .back-to-top svg { width: 16px; height: 16px; }
+
+  /* ── Typography ── */
+  .section { margin-bottom: 60px; page-break-inside: avoid; }
+  .section-label {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 2px;
+    color: var(--afdb-green); font-weight: 600; margin-bottom: 6px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .section-label svg { width: 14px; height: 14px; stroke: var(--afdb-green); }
+  h2 { font-size: 28px; font-weight: 700; color: var(--afdb-navy); margin-bottom: 20px; letter-spacing: -0.3px; }
+  h3 { font-size: 20px; font-weight: 600; color: var(--afdb-navy); margin: 30px 0 14px; }
+  h4 { font-size: 16px; font-weight: 600; color: #374151; margin: 24px 0 10px; }
+  p { margin-bottom: 14px; color: #4B5563; }
+  ul, ol { margin: 10px 0 16px 20px; color: #4B5563; }
+  li { margin-bottom: 6px; }
+  strong { color: #1F2937; }
+  hr { border: none; border-top: 1px solid var(--afdb-border); margin: 40px 0; }
+
+  /* ── Tables ── */
+  table { width: 100%; border-collapse: collapse; margin: 16px 0 24px; font-size: 13.5px; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.03); }
+  thead th {
+    background: var(--afdb-navy); color: #fff; padding: 10px 14px;
+    text-align: left; font-weight: 600; font-size: 12px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  thead th:first-child { border-radius: 8px 0 0 0; }
+  thead th:last-child { border-radius: 0 8px 0 0; }
+  tbody td { padding: 10px 14px; border-bottom: 1px solid var(--afdb-border); color: #4B5563; }
+  tbody tr:hover { background: #F9FAFB; }
+  .status-pass { color: var(--pass-green); font-weight: 600; }
+
+  /* ── Code Blocks ── */
+  pre {
+    background: var(--code-bg); color: var(--code-text); padding: 20px 24px;
+    border-radius: 10px; overflow-x: auto; font-size: 13px; line-height: 1.6;
+    margin: 16px 0 24px; font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid rgba(229,231,235,0.5);
+  }
+  code { font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; }
+  p code, li code, td code {
+    background: #F3F4F6; padding: 2px 6px; border-radius: 4px;
+    font-size: 12.5px; color: var(--afdb-navy);
+  }
+
+  /* ── Callouts ── */
+  .callout {
+    padding: 16px 20px; border-radius: 12px; margin: 16px 0 24px;
+    font-size: 14px; border: 1px solid;
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.04), 0 1px 4px rgba(0,0,0,0.02);
+    transition: box-shadow 0.2s;
+  }
+  .callout:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.06), 0 2px 6px rgba(0,0,0,0.03); }
+  .callout-info { background: rgba(239,246,255,0.8); border-color: rgba(37,99,235,0.15); color: #1E40AF; }
+  .callout-warn { background: rgba(255,251,235,0.8); border-color: rgba(245,158,11,0.15); color: #92400E; }
+  .callout-success { background: rgba(240,253,244,0.8); border-color: rgba(22,163,74,0.15); color: #166534; }
+  .callout-title { font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+    .callout-title svg { flex-shrink: 0; }
+
+  /* ── Pillar Cards ── */
+  .pillar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 20px 0 30px; }
+  .pillar-card {
+    padding: 24px; border-radius: 12px; border: 1px solid var(--afdb-border);
+    background: #fff; transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  }
+  .pillar-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.08); transform: translateY(-2px); }
+  .pillar-icon {
+    width: 40px; height: 40px; border-radius: 10px; display: flex;
+    align-items: center; justify-content: center; font-size: 18px; margin-bottom: 14px;
+  }
+  .pillar-card h4 { margin: 0 0 6px; font-size: 15px; color: var(--afdb-navy); }
+  .pillar-card p { margin: 0; font-size: 13px; color: var(--afdb-gray); }
+  .pillar-status { display: inline-block; margin-top: 10px; font-size: 11px; padding: 3px 10px; border-radius: 12px; font-weight: 600; }
+  .pillar-status.active { background: #DCFCE7; color: #166534; }
+
+  /* ── Architecture Diagram ── */
+  .arch-diagram {
+    background: var(--afdb-light); border: 1px solid var(--afdb-border);
+    border-radius: 12px; padding: 30px; margin: 20px 0 30px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 12px; line-height: 1.5; color: #374151; overflow-x: auto; white-space: pre;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+
+  /* ── Icon Tooltip ── */
+  .icon-tip { position: relative; }
+  .icon-tip::after {
+    content: attr(data-tip); position: absolute; bottom: calc(100% + 8px); left: 50%;
+    transform: translateX(-50%) translateY(4px); padding: 5px 10px; border-radius: 6px;
+    background: var(--afdb-navy); color: #fff; font-size: 11px; font-weight: 500;
+    white-space: nowrap; pointer-events: none; opacity: 0; transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  }
+  .icon-tip::before {
+    content: ''; position: absolute; bottom: calc(100% + 2px); left: 50%;
+    transform: translateX(-50%); border: 5px solid transparent; border-top-color: var(--afdb-navy);
+    pointer-events: none; opacity: 0; transition: all 0.2s;
+  }
+  .icon-tip:hover::after { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .icon-tip:hover::before { opacity: 1; }
+
+  /* ── Flow Diagram ── */
+  .flow-steps { display: flex; gap: 0; margin: 20px 0 30px; flex-wrap: wrap; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .flow-step {
+    flex: 1; min-width: 140px; padding: 16px; text-align: center;
+    background: var(--afdb-light); border: 1px solid var(--afdb-border);
+    position: relative; font-size: 13px;
+  }
+  .flow-step:first-child { border-radius: 10px 0 0 10px; }
+  .flow-step:last-child { border-radius: 0 10px 10px 0; }
+  .flow-step .step-num {
+    display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--afdb-green); font-weight: 600; margin-bottom: 4px;
+  }
+  .flow-step strong { display: block; color: var(--afdb-navy); margin-bottom: 2px; }
+  .flow-step span { color: var(--afdb-gray); font-size: 12px; }
+
+  /* ── Middleware Stack ── */
+  .mw-stack { margin: 20px 0 30px; }
+  .mw-item {
+    display: flex; align-items: center; gap: 14px; padding: 12px 18px;
+    border: 1px solid var(--afdb-border); margin-bottom: -1px; font-size: 13.5px;
+  }
+  .mw-item:first-child { border-radius: 10px 10px 0 0; }
+  .mw-item:last-child { border-radius: 0 0 10px 10px; }
+  .mw-num {
+    width: 28px; height: 28px; border-radius: 50%; background: var(--afdb-navy);
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; flex-shrink: 0;
+  }
+  .mw-name { font-weight: 600; color: var(--afdb-navy); }
+  .mw-desc { color: var(--afdb-gray); font-size: 12.5px; }
+
+  /* ── Checklist ── */
+  .checklist { list-style: none; margin-left: 0; }
+  .checklist li { padding: 8px 0 8px 30px; position: relative; border-bottom: 1px solid #F3F4F6; }
+  .checklist li::before {
+    content: ''; position: absolute; left: 0; top: 10px;
+    width: 16px; height: 16px; border: 2px solid var(--afdb-border); border-radius: 4px;
+  }
+
+  /* ── Print ── */
+  @media print {
+    .sidebar { display: none; }
+    .mini-toc { display: none; }
+    .content { padding: 30px; max-width: 100%; }
+    .cover { min-height: auto; padding: 60px 40px; page-break-after: always; }
+    .section { page-break-inside: avoid; }
+    pre { font-size: 11px; }
+    table { font-size: 11px; }
+  }
+  @media (max-width: 1200px) {
+    .mini-toc { display: none; }
+  }
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .content { padding: 24px 20px; }
+    .pillar-grid { grid-template-columns: 1fr; }
+    .cover h1 { font-size: 28px; }
+    .cover-meta { grid-template-columns: repeat(2, 1fr); }
+    .cover-decor { display: none; }
+    .flow-steps { flex-direction: column; }
+    .flow-step { border-radius: 0 !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════ COVER ═══ -->
+<div class="cover" id="top">
+  <!-- Decorative floating circles -->
+  <div class="cover-decor cover-decor-1"></div>
+  <div class="cover-decor cover-decor-2"></div>
+  <div class="cover-decor cover-decor-3"></div>
+
+  <div class="cover-logo"><img src="https://di9mr54a05a64.cloudfront.net/api-iatf.expoplatform.com/image/MTc1NTg2MTYxNjY4YTg1MjcwNjk0MjI=.png" alt="AfDB Official Logo" /></div>
+  <div class="cover-badge">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+    Proposal Document
+  </div>
+  <h1>Secure Enterprise Portal</h1>
+  <h2>Companion technical document to the Proposal for Consultancy Services. <br> Senior Web Frontend Developer Consultant (TCIS). </h2>
+  <div class="cover-divider"></div>
+  <div class="cover-meta">
+    <div class="cover-meta-item"><div class="label">Version</div><div class="value">1.0</div></div>
+    <div class="cover-meta-item"><div class="label">Date</div><div class="value">August 28, 2026</div></div>
+    <div class="cover-meta-item"><div class="label">Prepared By</div><div class="value">Eng. Depute N.Alphonse, PMP&reg;</div></div>
+    <div class="cover-meta-item"><div class="label">Classification</div><div class="value">Confidential</div></div>
+  </div>
+  <div class="cover-classification" onclick="document.querySelector('.doc-wrapper').scrollIntoView({behavior:'smooth'})" title="Scroll to begin reading">
+    <svg class="scroll-arrow" viewBox="0 0 24 24" fill="none" stroke="var(--afdb-green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    <svg class="scroll-arrow" viewBox="0 0 24 24" fill="none" stroke="var(--afdb-green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    <svg class="scroll-arrow" viewBox="0 0 24 24" fill="none" stroke="var(--afdb-green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    <span class="scroll-label">Scroll to read</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ BODY ═══ -->
+<div class="doc-wrapper">
+
+<!-- ── Sidebar / TOC ── -->
+<nav class="sidebar">
+  <a href="#top" class="sidebar-title" style="text-decoration:none; color:inherit; cursor:pointer;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg>
+    Table of Contents
+  </a>
+  <div class="sidebar-search">
+    <svg class="sidebar-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="sidebarSearch" placeholder="Search documentation..." autocomplete="off" />
+    <button class="sidebar-search-clear" id="searchClear" title="Clear">&times;</button>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+  <div class="sidebar-links">
+    <a href="#executive-summary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> 1. Executive Summary</a>
+    <a href="#architecture"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg> 2. System Architecture</a>
+    <a href="#tech-stack"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="2" x2="9" y2="4"/><line x1="15" y1="2" x2="15" y2="4"/></svg> 3. Technology Stack</a>
+    <a href="#mfa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> 4. MFA-Protected Access</a>
+    <a href="#sso"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg> 5. SSO-IDP Federation</a>
+    <a href="#owasp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> 6. OWASP Top 10</a>
+    <a href="#api"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> 7. API Reference</a>
+    <a href="#testing"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3h6v4H9z"/><path d="M7 7h10a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z"/></svg> 8. Testing &amp; Results</a>
+    <a href="#deployment"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg> 9. Deployment</a>
+    <a href="#compliance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> 10. Compliance Matrix</a>
+    <a href="#appendices"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> 11. Appendices</a>
+  </div>
+  <div class="sidebar-footer">
+    <div class="sidebar-footer-brand">
+      <div class="sidebar-footer-logo">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+      </div>
+      <div>
+        <div class="sidebar-footer-brand-text">AfDB Secure Portal</div>
+        <div class="sidebar-footer-brand-sub">Security Proposal v1.0</div>
+      </div>
+    </div>
+    <div class="sidebar-footer-meta">
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> <a href="https://atradezone.ca/deputenalphonse" target="_blank" rel="noopener" style="color:inherit; text-decoration:none; background:none;">Eng. Depute N.Alphonse</a></span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Aug 2026</span>
+    </div>
+  </div>
+</nav>
+
+<!-- ── Main Content ── -->
+<main class="content">
+
+<!-- ═══════════════ 1. EXECUTIVE SUMMARY ═══════════════ -->
+<section class="section" id="executive-summary">
+  <div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> Section 1</div>
+  <h2>Executive Summary</h2>
+  <p style="font-size:14px; color:#6B7280; line-height:1.7; max-width:720px; margin-bottom:24px;">This document is a companion technical proposal to the <strong>Proposal for Consultancy Services — Senior Web Frontend Developer Consultant (TCIS)</strong>. It details the end-to-end security architecture implemented for the AfDB enterprise portal: MFA-protected authentication flows, SSO-IDP federation with Google Workspace and Azure AD, OWASP Top 10 hardened frontend middleware, and a fully documented API layer — demonstrating the secure, production-ready web applications that the consultancy engagement will deliver.</p>
+  <p>The AfDB Secure Enterprise Portal is a modern, security-first web application designed to manage project data, reporting, and operational workflows for the African Development Bank. This proposal details the implementation of <strong>three critical security pillars</strong> that protect the platform and its users — demonstrating a fully functional proof-of-concept with verified results.</p>
+
+  <div class="pillar-grid">
+    <div class="pillar-card">
+      <div class="pillar-icon" style="background:#DCFCE7;color:#166534;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1"/></svg></div>
+      <h4>MFA-Protected Access</h4>
+      <p>Multi-factor authentication with TOTP authenticator apps and backup recovery codes</p>
+      <span class="pillar-status active">Implemented &amp; Verified</span>
+    </div>
+    <div class="pillar-card">
+      <div class="pillar-icon" style="background:#DBEAFE;color:#1E40AF;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg></div>
+      <h4>SSO-IDP Federation</h4>
+      <p>Single Sign-On via OAuth2/OIDC with Google Workspace and Microsoft Azure AD</p>
+      <span class="pillar-status active">Implemented &amp; Verified</span>
+    </div>
+    <div class="pillar-card">
+      <div class="pillar-icon" style="background:#FEF3C7;color:#92400E;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg></div>
+      <h4>OWASP Top 10 Compliant</h4>
+      <p>Industry-standard security hardening against the most critical web application threats</p>
+      <span class="pillar-status active">Implemented &amp; Verified</span>
+    </div>
+  </div>
+
+  <p>The system is built as a <strong>microservices architecture</strong> with a dedicated Authentication Gateway (Beta Backend) that handles all security concerns, and a Data Service (Core Backend) that serves business logic. Both frontends authenticate exclusively through the hardened gateway.</p>
+
+  <div class="callout callout-success">
+    <div class="callout-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Key Outcomes</div>
+    <ul style="margin:8px 0 0 16px;">
+      <li>Zero-trust authentication model with layered security</li>
+      <li>Protection against all OWASP Top 10 vulnerability categories</li>
+      <li>Enterprise SSO federation with Google and Microsoft/Azure AD</li>
+      <li>Account lockout protection against brute-force attacks</li>
+      <li>Input sanitization blocking NoSQL injection and XSS attacks</li>
+      <li>Comprehensive audit logging for all security events</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ═══════════════ 2. ARCHITECTURE ═══════════════ -->
+<section class="section" id="architecture">
+  <div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg> Section 2</div>
+  <h2>System Architecture</h2>
+
+  <h3 id="s2-1">2.1 High-Level Architecture</h3>
+  <div class="arch-diagram">┌─────────────────────────────────────────────────────────────────────────────────┐
+│                         CLIENT LAYER  (Web Browsers)                            │
+└──────────────────────────────┬──────────────────────────────────────────────────┘
+                               │  HTTPS
+            ┌──────────────────┴──────────────────┐
+            ▼                                      ▼
+┌────────────────────┐                ┌────────────────────┐
+│  BETA FRONTEND     │                │  CORE FRONTEND     │
+│  Next.js  :3000    │                │  Next.js  :3001    │
+│  ─────────────     │                │  ──────────────    │
+│  • Login / MFA     │                │  • Dashboard       │
+│  • SSO Redirect    │                │  • Projects        │
+│  • Auth Flows      │                │  • Reports         │
+└────────┬───────────┘                └──────────┬─────────┘
+         │  REST / JSON                          │  JWT
+         ▼                                       ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    API GATEWAY  (Express.js)                 │
+│              JWT Validation  •  Rate Limiting                │
+│              CORS Handling   •  Request Routing              │
+└────────┬──────────────────────────────────┬─────────────────┘
+         │                                   │
+         ▼                                   ▼
+┌────────────────────┐                ┌────────────────────┐
+│  BETA BACKEND      │                │  CORE BACKEND      │
+│  Node.js   :4000   │                │  Node.js   :4001   │
+│  ──────────────    │                │  ──────────────    │
+│  • Auth Service    │                │  • Project Svc     │
+│  • MFA  (TOTP)    │                │  • Dashboard Svc   │
+│  • SSO  (OAuth2)  │                │  • Report Svc      │
+│  • OWASP Shield    │                │  • Data Access     │
+└────────┬───────────┘                └──────────┬─────────┘
+         │                                        │
+         ▼                                        ▼
+┌─────────────────────────────────────────────────────────────┐
+│                       DATA LAYER                             │
+│                                                              │
+│   ┌──────────────────────┐     ┌──────────────────────┐     │
+│   │   PostgreSQL  :5432  │     │     Redis  :6379     │     │
+│   │   ─────────────────  │     │     ────────────     │     │
+│   │   • Users &amp; Roles   │     │   • Session Store    │     │
+│   │   • MFA Secrets      │     │   • Rate Limit Cnt   │     │
+│   │   • Audit Logs       │     │   • Token Cache      │     │
+│   │   • App Data         │     │   • SSO State        │     │
+│   └──────────────────────┘     └──────────────────────┘     │
+└─────────────────────────────────────────────────────────────┘</div>
+
+  <h3 id="s2-2">2.2 Authentication Flow</h3>
+  <div class="flow-steps">
+    <div class="flow-step"><span class="step-num">Step 1</span><strong>User Login</strong><span>Email + Password</span></div>
+    <div class="flow-step"><span class="step-num">Step 2</span><strong>Validate</strong><span>Credentials check</span></div>
+    <div class="flow-step"><span class="step-num">Step 3</span><strong>MFA Check</strong><span>Is MFA enabled?</span></div>
+    <div class="flow-step"><span class="step-num">Step 4</span><strong>Verify</strong><span>TOTP or Backup</span></div>
+    <div class="flow-step"><span class="step-num">Step 5</span><strong>JWT Issued</strong><span>Access granted</span></div>
+  </div>
+
+  <div class="callout callout-info">
+    <div class="callout-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Account Lockout Branch</div>
+    If 5 consecutive failed attempts occur at Step 2, the account is locked for 15 minutes (HTTP 423). The user receives a clear warning with remaining attempt count after the 3rd failure.
+  </div>
+</section>
+
+<!-- ═══════════════ 3. TECH STACK ═══════════════ -->
+<section class="section" id="tech-stack">
+  <div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="2" x2="9" y2="4"/><line x1="15" y1="2" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="22"/><line x1="15" y1="20" x2="15" y2="22"/><line x1="2" y1="9" x2="4" y2="9"/><line x1="2" y1="15" x2="4" y2="15"/><line x1="20" y1="9" x2="22" y2="9"/><line x1="20" y1="15" x2="22" y2="15"/></svg> Section 3</div>
+  <h2>Technology Stack</h2>
+
+  <h3 id="s3-1">3.1 Frontend</h3>
+  <table>
+    <thead><tr><th>Technology</th><th>Version</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td>Next.js</td><td>15.x</td><td>React framework with SSR/SSG</td></tr>
+      <tr><td>React</td><td>19.x</td><td>UI component library</td></tr>
+      <tr><td>TypeScript</td><td>5.5.x</td><td>Type-safe development</td></tr>
+      <tr><td>Tailwind CSS</td><td>3.4.x</td><td>Utility-first styling</td></tr>
+      <tr><td>Ant Design</td><td>5.20.x</td><td>Enterprise UI components</td></tr>
+      <tr><td>TanStack React Query</td><td>5.51.x</td><td>Server state management</td></tr>
+      <tr><td>Axios</td><td>1.7.x</td><td>HTTP client with interceptors</td></tr>
+      <tr><td>Lucide React</td><td>1.34.x</td><td>Icon library</td></tr>
+      <tr><td>next-themes</td><td>0.4.x</td><td>Dark/light mode support</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="s3-2">3.2 Backend</h3>
+  <table>
+    <thead><tr><th>Technology</th><th>Version</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td>Node.js + Express</td><td>4.21.x</td><td>API server framework</td></tr>
+      <tr><td>TypeScript</td><td>5.5.x</td><td>Type-safe development</td></tr>
+      <tr><td>MongoDB + Mongoose</td><td>8.6.x</td><td>Primary data store (NoSQL)</td></tr>
+      <tr><td>Redis + ioredis</td><td>5.4.x</td><td>Caching &amp; session store</td></tr>
+      <tr><td>JSON Web Token</td><td>9.0.x</td><td>Token-based authentication</td></tr>
+      <tr><td>bcryptjs</td><td>2.4.x</td><td>Password hashing (12 rounds)</td></tr>
+      <tr><td>otplib</td><td>13.5.x</td><td>TOTP multi-factor authentication</td></tr>
+      <tr><td>Helmet</td><td>7.1.x</td><td>HTTP security headers</td></tr>
+      <tr><td>express-rate-limit</td><td>7.4.x</td><td>Brute-force protection</td></tr>
+      <tr><td>QRCode</td><td>1.5.x</td><td>MFA setup QR generation</td></tr>
+      <tr><td>Winston</td><td>3.14.x</td><td>Structured logging</td></tr>
+      <tr><td>Swagger</td><td>6.2.x</td><td>API documentation</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="s3-3">3.3 Infrastructure</h3>
+  <table>
+    <thead><tr><th>Component</th><th>Technology</th><th>Port</th></tr></thead>
+    <tbody>
+      <tr><td>Beta Frontend</td><td>Next.js</td><td>3000</td></tr>
+      <tr><td>Core Frontend</td><td>Next.js</td><td>3001</td></tr>
+      <tr><td>Beta Backend (Auth Gateway)</td><td>Express.js</td><td>4000</td></tr>
+      <tr><td>Core Backend (Data Service)</td><td>Express.js</td><td>4001</td></tr>
+      <tr><td>Database</td><td>MongoDB</td><td>27018</td></tr>
+      <tr><td>Cache</td><td>Redis</td><td>6379</td></tr>
+      <tr><td>API Documentation</td><td>Swagger UI</td><td>4000/api-docs</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<hr>
+
+<!-- ═══════════════ 4. MFA ═══════════════ -->
+<section class="section" id="mfa">
+  <div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Section 4</div>
+  <h2>Security Implementation: MFA-Protected Access</h2>
+
+  <h3 id="s4-1">4.1 Overview</h3>
+  <p>Multi-Factor Authentication (MFA) adds a critical second layer of verification beyond passwords. Users must provide both <strong>something they know</strong> (password) and <strong>something they have</strong> (authenticator app or backup code).</p>
+
+  <h3 id="s4-2">4.2 TOTP Implementation</h3>
+  <table>
+    <thead><tr><th>Property</th><th>Detail</th></tr></thead>
+    <tbody>
+      <tr><td>Algorithm</td><td>TOTP per RFC 6238 via <code>otplib</code> v13</td></tr>
+      <tr><td>Secret Generation</td><td>Cryptographically random 32-character base32 secret</td></tr>
+      <tr><td>QR Code</td><td>Generated as data URL for authenticator app scanning</td></tr>
+      <tr><td>Verification</td><td>Time-windowed token validation with drift tolerance</td></tr>
+      <tr><td>Issuer Label</td><td>"AfDB Secure Portal"</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="s4-3">4.3 Backup Codes</h3>
+  <table>
+    <thead><tr><th>Property</th><th>Detail</th></tr></thead>
+    <tbody>
+      <tr><td>Quantity</td><td>10 unique codes per user</td></tr>
+      <tr><td>Format</td><td>8-character uppercase hexadecimal (e.g., <code>A3F7B2C1</code>)</td></tr>
+      <tr><td>Storage</td><td>bcrypt-hashed (10 rounds) — plaintext never stored</td></tr>
+      <tr><td>Usage</td><td>One-time use; marked <code>used: true</code> after verification</td></tr>
+      <tr><td>Regeneration</td><td>Users can generate a fresh set of 10 codes anytime</td></tr>
+      <tr><td>Warning</td><td>System alerts when 3 or fewer codes remain</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="s4-4">4.4 MFA API Endpoints</h3>
+  <table>
+    <thead><tr><th>Method</th><th>Endpoint</th><th>Auth</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>POST</td><td><code>/api/v1/mfa/setup</code></td><td>Yes</td><td>Generate MFA secret &amp; QR code</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/mfa/verify</code></td><td>Yes</td><td>Verify TOTP token and enable MFA</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/mfa/verify-backup</code></td><td>Yes</td><td>Verify a backup code</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/mfa/regenerate-backup-codes</code></td><td>Yes</td><td>Generate new backup code set</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/mfa/status</code></td><td>Yes</td><td>Check MFA status &amp; remaining codes</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/mfa/disable</code></td><td>Yes</td><td>Disable MFA and clear secrets</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="s4-5">4.5 MFA User Flow</h3>
+  <div class="flow-steps">
+    <div class="flow-step"><span class="step-num">Enroll</span><strong>Scan QR</strong><span>Authenticator app</span></div>
+    <div class="flow-step"><span class="step-num">Verify</span><strong>Enter TOTP</strong><span>6-digit code</span></div>
+    <div class="flow-step"><span class="step-num">Login</span><strong>Credentials</strong><span>Email + password</span></div>
+    <div class="flow-step"><span class="step-num">MFA</span><strong>Second Factor</strong><span>TOTP or backup</span></div>
+    <div class="flow-step"><span class="step-num">Access</span><strong>Dashboard</strong><span>JWT issued</span></div>
+  </div>
+</section>
+
+<hr>
+
+<!-- ═══════════════ 5. SSO ═══════════════ -->
+<section class="section" id="sso">
+  <div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg> Section 5</div>
+  <h2>Security Implementation: SSO-IDP Federation</h2>
+
+  <h3 id="s5-1">5.1 Overview</h3>
+  <p>Single Sign-On (SSO) federation allows users to authenticate through their organization's existing identity provider without managing separate credentials. This implementation follows the <strong>OAuth 2.0 Authorization Code Flow</strong>.</p>
+
+  <h3 id="s5-2">5.2 Supported Identity Providers</h3>
+  <table>
+    <thead><tr><th>Provider</th><th>Protocol</th><th>Authorization Endpoint</th><th>User Info Endpoint</th></tr></thead>
+    <tbody>
+      <tr><td>Google</td><td>OAuth 2.0 / OIDC</td><td>accounts.google.com/o/oauth2/v2/auth</td><td>googleapis.com/oauth2/v2/userinfo</td></tr>
+      <tr><td>Microsoft / Azure AD</td><td>OAuth 2.0 / OIDC</td><td>login.microsoftonline.com/{tenant}/oauth2/v2.0/authorize</td><td>graph.microsoft.com/v1.0/me</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="s5-3">5.3 Security Measures</h3>
+  <table>
+    <thead><tr><th>Measure</th><th>Implementation</th></tr></thead>
+    <tbody>
+      <tr><td><strong>CSRF Protection</strong></td><td>Cryptographic state parameter (<code>crypto.randomBytes(32)</code>) validated with timing-safe comparison</td></tr>
+      <tr><td><strong>Token Exchange</strong></td><td>Server-side code exchange (never exposed to client)</td></tr>
+      <tr><td><strong>State Expiry</strong></td><td>States expire after 10 minutes to prevent replay attacks</td></tr>
+      <tr><td><strong>Auto-Provisioning</strong></td><td>New SSO users automatically created with <code>viewer</code> role</td></tr>
+      <tr><td><strong>Account Linking</strong></td><td>Existing accounts linked to SSO provider on first login</td></tr>
+      <tr><td><strong>Provider Discovery</strong></td><td>Only configured providers appear (no information leakage)</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="s5-4">5.4 SSO API Endpoints</h3>
+  <table>
+    <thead><tr><th>Method</th><th>Endpoint</th><th>Auth</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>GET</td><td><code>/api/v1/sso/providers</code></td><td>No</td><td>List available SSO providers</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/sso/initiate/:providerId</code></td><td>No</td><td>Start OAuth flow, returns authorization URL</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/sso/callback/:providerId</code></td><td>No</td><td>Handle OAuth callback with authorization code</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="s5-5">5.5 SSO Authentication Sequence</h3>
+  <div class="flow-steps">
+    <div class="flow-step"><span class="step-num">1</span><strong>Click SSO</strong><span>User initiates</span></div>
+    <div class="flow-step"><span class="step-num">2</span><strong>Get Auth URL</strong><span>Backend generates state</span></div>
+    <div class="flow-step"><span class="step-num">3</span><strong>Redirect</strong><span>To identity provider</span></div>
+    <div class="flow-step"><span class="step-num">4</span><strong>Authenticate</strong><span>User logs in at IDP</span></div>
+    <div class="flow-step"><span class="step-num">5</span><strong>Callback</strong><span>Code exchanged for tokens</span></div>
+    <div class="flow-step"><span class="step-num">6</span><strong>JWT Issued</strong><span>User authenticated</span></div>
+  </div>
+</section>
+
+<hr>
+
+<!-- ═══════════════ 6. OWASP ═══════════════ -->
+<section class="section" id="owasp">
+  <div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Section 6</div>
+  <h2>Security Implementation: OWASP Top 10 Compliance</h2>
+
+  <h3 id="s6-1">6.1 Compliance by Category</h3>
+
+  <h4>A01: Broken Access Control</h4>
+  <table>
+    <thead><tr><th>Control</th><th>Implementation</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>Security Headers</td><td>Helmet.js with strict Content Security Policy</td><td class="status-pass">Verified</td></tr>
+      <tr><td>CORS</td><td>Restricted to approved origins only</td><td class="status-pass">Verified</td></tr>
+      <tr><td>X-Frame-Options</td><td><code>DENY</code> — prevents clickjacking</td><td class="status-pass">Verified</td></tr>
+      <tr><td>Auth Middleware</td><td>All protected routes require valid JWT</td><td class="status-pass">Verified</td></tr>
+      <tr><td>Role-Based Access</td><td><code>admin</code>, <code>staff</code>, <code>viewer</code> roles enforced</td><td class="status-pass">Verified</td></tr>
+    </tbody>
+  </table>
+
+  <h4>A02: Cryptographic Failures</h4>
+  <table>
+    <thead><tr><th>Control</th><th>Implementation</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>Password Hashing</td><td>bcrypt with 12 salt rounds</td><td class="status-pass">Verified</td></tr>
+      <tr><td>Transport Security</td><td>HSTS with 1-year max-age</td><td class="status-pass">Verified</td></tr>
+      <tr><td>Token Security</td><td>JWT with short expiry (30 minutes)</td><td class="status-pass">Verified</td></tr>
+      <tr><td>Refresh Tokens</td><td>UUID v4, stored server-side, revocable</td><td class="status-pass">Verified</td></tr>
+      <tr><td>Body Size Limit</td><td>10KB maximum request body</td><td class="status-pass">Verified</td></tr>
+      <tr><td>Cache Prevention</td><td><code>Cache-Control: no-store</code> on all responses</td><td class="status-pass">Verified</td></tr>
+    </tbody>
+  </table>
+
+  <h4>A03: Injection</h4>
+  <table>
+    <thead><tr><th>Control</th><th>Implementation</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>NoSQL Injection</td><td>Blocks MongoDB operators (<code>$gt</code>, <code>$regex</code>, <code>$where</code>, etc.) as both values AND keys</td><td class="status-pass">Verified</td></tr>
+      <tr><td>XSS Injection</td><td>Blocks <code>&lt;script&gt;</code>, <code>javascript:</code>, <code>on\w+=</code>, <code>&lt;iframe&gt;</code>, <code>&lt;object&gt;</code></td><td class="status-pass">Verified</td></tr>
+      <tr><td>Key Sanitization</td><td>Replaces <code>$</code> and <code>.</code> in object keys with <code>_</code></td><td class="status-pass">Verified</td></tr>
+      <tr><td>String Length</td><td>10,000 character maximum per value</td><td class="status-pass">Verified</td></tr>
+      <tr><td>Parameterized Queries</td><td>Mongoose ODM prevents direct query injection</td><td class="status-pass">Verified</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-warn">
+    <div class="callout-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg> Live Test Evidence</div>
+    <strong>NoSQL Injection:</strong> <code>{"email": {"$gt": ""}}</code> → <code>400 "Invalid input detected"</code><br>
+    <strong>XSS Injection:</strong> <code>{"firstName": "&lt;script&gt;alert(1)&lt;/script&gt;"}</code> → <code>400 "Invalid input detected"</code>
+  </div>
+
+  <h4>A04: Insecure Design</h4>
+  <table>
+    <thead><tr><th>Control</th><th>Implementation</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>API Rate Limiting</td><td>100 requests/minute (general API)</td><td class="status-pass">Verified</td></tr>
+      <tr><td>Login Rate Limiting</td><td>5 attempts per 15 minutes per IP</td><td class="status-pass">Verified</td></tr>
+      <tr><td>Account Lockout</td><td>5 failed logins → 15-minute lockout</td><td class="status-pass">Verified</td></tr>
+      <tr><td>Password Policy</td><td>OWASP-compliant strength requirements</td><td class="status-pass">Verified</td></tr>
+    </tbody>
+  </table>
+
+  <h4>A05: Security Misconfiguration</h4>
+  <table>
+    <thead><tr><th>Control</th><th>Implementation</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>Helmet</td><td>Comprehensive HTTP header hardening</td><td class="status-pass">Verified</td></tr>
+      <tr><td>X-Powered-By</td><td>Removed from responses</td><td class="status-pass">Verified</td></tr>
+      <tr><td>Permissions-Policy</td><td>Camera, microphone, geolocation disabled</td><td class="status-pass">Verified</td></tr>
+      <tr><td>Cross-Origin Policies</td><td>COEP, COOP, CORP all enforced</td><td class="status-pass">Verified</td></tr>
+      <tr><td>Error Handling</td><td>Centralized handler prevents stack trace leakage</td><td class="status-pass">Verified</td></tr>
+    </tbody>
+  </table>
+
+  <h4>A07: Identification &amp; Authentication</h4>
+  <table>
+    <thead><tr><th>Control</th><th>Implementation</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>Account Lockout</td><td>5 attempts → 15 min lock, with user feedback</td><td class="status-pass">Verified</td></tr>
+      <tr><td>Password Strength</td><td>Min 8 chars, uppercase, lowercase, digit, special char</td><td class="status-pass">Verified</td></tr>
+      <tr><td>MFA</td><td>TOTP + backup codes</td><td class="status-pass">Verified</td></tr>
+      <tr><td>Session Management</td><td>JWT access (30min) + refresh (30 days) tokens</td><td class="status-pass">Verified</td></tr>
+      <tr><td>Token Revocation</td><td>All tokens revoked on password change or logout</td><td class="status-pass">Verified</td></tr>
+    </tbody>
+  </table>
+
+  <h4>A09: Logging &amp; Monitoring</h4>
+  <table>
+    <thead><tr><th>Control</th><th>Implementation</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>HTTP Logging</td><td>Morgan combined format → Winston structured logs</td><td class="status-pass">Verified</td></tr>
+      <tr><td>Security Events</td><td>MFA enable/disable, backup code usage, account lockout</td><td class="status-pass">Verified</td></tr>
+      <tr><td>Auth Events</td><td>Login success/failure, token refresh, logout</td><td class="status-pass">Verified</td></tr>
+      <tr><td>Health Check</td><td><code>/health</code> endpoint for monitoring</td><td class="status-pass">Verified</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="s6-2">6.2 Security Middleware Stack</h3>
+  <p>The middleware stack is ordered for defense-in-depth. Each layer processes the request before it reaches the route handler:</p>
+  <div class="mw-stack">
+    <div class="mw-item"><span class="mw-num">1</span><div><span class="mw-name">Helmet</span> <span class="mw-desc">— Security response headers (CSP, HSTS, X-Frame)</span></div></div>
+    <div class="mw-item"><span class="mw-num">2</span><div><span class="mw-name">Security Headers</span> <span class="mw-desc">— Cache prevention, Permissions-Policy, X-XSS-Protection</span></div></div>
+    <div class="mw-item"><span class="mw-num">3</span><div><span class="mw-name">CORS</span> <span class="mw-desc">— Origin validation, credential control</span></div></div>
+    <div class="mw-item"><span class="mw-num">4</span><div><span class="mw-name">Body Parser</span> <span class="mw-desc">— JSON parsing with 10KB size limit</span></div></div>
+    <div class="mw-item"><span class="mw-num">5</span><div><span class="mw-name">Input Sanitizer</span> <span class="mw-desc">— NoSQL injection &amp; XSS pattern detection</span></div></div>
+    <div class="mw-item"><span class="mw-num">6</span><div><span class="mw-name">Morgan Logger</span> <span class="mw-desc">— HTTP request logging (combined format)</span></div></div>
+    <div class="mw-item"><span class="mw-num">7</span><div><span class="mw-name">Rate Limiter</span> <span class="mw-desc">— 100 req/min general, 5 login attempts/15 min</span></div></div>
+    <div class="mw-item"><span class="mw-num">8</span><div><span class="mw-name">Auth Middleware</span> <span class="mw-desc">— JWT validation, user loading, role checking</span></div></div>
+    <div class="mw-item"><span class="mw-num">9</span><div><span class="mw-name">Error Handler</span> <span class="mw-desc">— Centralized error handling, no stack trace leakage</span></div></div>
+  </div>
+
+  <h4>Verified HTTP Response Headers</h4>
+  <pre>X-Frame-Options: DENY
+X-Content-Type-Options: nosniff
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'...
+Referrer-Policy: strict-origin-when-cross-origin
+Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
+Cache-Control: no-store
+X-XSS-Protection: 1; mode=block</pre>
+</section>
+
+<hr>
+
+<!-- ═══════════════ 7. API REFERENCE ═══════════════ -->
+<section class="section" id="api">
+  <div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> Section 7</div>
+  <h2>API Reference</h2>
+
+  <h3 id="s7-1">7.1 Authentication Endpoints</h3>
+  <table>
+    <thead><tr><th>Method</th><th>Endpoint</th><th>Auth</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>POST</td><td><code>/api/v1/auth/login</code></td><td>No</td><td>Authenticate with email/password</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/auth/signup</code></td><td>No</td><td>Register new account</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/auth/verify-mfa</code></td><td>No</td><td>Verify MFA token (TOTP or backup code)</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/auth/change-password</code></td><td>Yes</td><td>Change password (revokes all tokens)</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/auth/refresh</code></td><td>No</td><td>Refresh access token</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/auth/logout</code></td><td>Yes</td><td>Revoke all tokens</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/auth/me</code></td><td>Yes</td><td>Get current user profile</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="s7-2">7.2 MFA Endpoints</h3>
+  <table>
+    <thead><tr><th>Method</th><th>Endpoint</th><th>Auth</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>POST</td><td><code>/api/v1/mfa/setup</code></td><td>Yes</td><td>Generate MFA secret &amp; QR code</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/mfa/verify</code></td><td>Yes</td><td>Verify TOTP and enable MFA</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/mfa/verify-backup</code></td><td>Yes</td><td>Verify backup code</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/mfa/regenerate-backup-codes</code></td><td>Yes</td><td>Regenerate backup codes</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/mfa/status</code></td><td>Yes</td><td>Get MFA status</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/mfa/disable</code></td><td>Yes</td><td>Disable MFA</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="s7-3">7.3 SSO Endpoints</h3>
+  <table>
+    <thead><tr><th>Method</th><th>Endpoint</th><th>Auth</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>GET</td><td><code>/api/v1/sso/providers</code></td><td>No</td><td>List configured SSO providers</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/sso/initiate/:providerId</code></td><td>No</td><td>Start OAuth2 flow</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/sso/callback/:providerId</code></td><td>No</td><td>OAuth2 callback handler</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<hr>
+
+<!-- ═══════════════ 8. TESTING ═══════════════ -->
+<section class="section" id="testing">
+  <div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3h6v4H9z"/><path d="M7 7h10a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z"/><path d="M9 14l2 2 4-4"/></svg> Section 8</div>
+  <h2>Testing Scenarios &amp; Results</h2>
+
+  <h3 id="s8-1">8.1 Authentication Tests</h3>
+  <table>
+    <thead><tr><th>#</th><th>Scenario</th><th>Input</th><th>Expected Result</th><th>Actual Result</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Valid login</td><td><code>admin@afdb.org</code> / <code>Password123!</code></td><td>200 OK, JWT issued</td><td>200 OK, role: admin</td><td class="status-pass">PASS</td></tr>
+      <tr><td>2</td><td>Invalid password</td><td><code>admin@afdb.org</code> / <code>wrongpass</code></td><td>401 Invalid credentials</td><td>401 Invalid credentials</td><td class="status-pass">PASS</td></tr>
+      <tr><td>3</td><td>Missing fields</td><td><code>{}</code></td><td>400 Required fields</td><td>400 Email and password required</td><td class="status-pass">PASS</td></tr>
+      <tr><td>4</td><td>Account lockout</td><td>5 consecutive wrong passwords</td><td>423 Account locked</td><td>423 Locked, 15min cooldown</td><td class="status-pass">PASS</td></tr>
+      <tr><td>5</td><td>Lockout warning</td><td>3rd failed attempt</td><td>Warning shown</td><td>Orange alert, remaining count</td><td class="status-pass">PASS</td></tr>
+      <tr><td>6</td><td>New user signup</td><td>Valid registration data</td><td>201 Created, JWT</td><td>201 Created, auto-login</td><td class="status-pass">PASS</td></tr>
+      <tr><td>7</td><td>Weak password</td><td><code>password</code></td><td>400 Too weak</td><td>400 with requirements</td><td class="status-pass">PASS</td></tr>
+      <tr><td>8</td><td>Duplicate email</td><td>Existing email</td><td>409 Already registered</td><td>409 Already registered</td><td class="status-pass">PASS</td></tr>
+      <tr><td>9</td><td>Password change</td><td>Valid current + new</td><td>200, tokens revoked</td><td>200 Password changed</td><td class="status-pass">PASS</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="s8-2">8.2 MFA Tests</h3>
+  <table>
+    <thead><tr><th>#</th><th>Scenario</th><th>Input</th><th>Expected Result</th><th>Actual Result</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>MFA setup</td><td>Authenticated user</td><td>Secret + QR returned</td><td>QR data URL generated</td><td class="status-pass">PASS</td></tr>
+      <tr><td>2</td><td>TOTP verify</td><td>Valid 6-digit code</td><td>200, JWT issued</td><td>Tokens returned</td><td class="status-pass">PASS</td></tr>
+      <tr><td>3</td><td>TOTP invalid</td><td>Wrong code</td><td>401 Invalid</td><td>401 Invalid MFA token</td><td class="status-pass">PASS</td></tr>
+      <tr><td>4</td><td>Backup code</td><td>Valid backup code</td><td>200, code consumed</td><td>Tokens, code marked used</td><td class="status-pass">PASS</td></tr>
+      <tr><td>5</td><td>Backup reuse</td><td>Same backup code</td><td>401 Already used</td><td>401 Invalid</td><td class="status-pass">PASS</td></tr>
+      <tr><td>6</td><td>Regenerate</td><td>Authenticated user</td><td>10 new codes</td><td>New set generated</td><td class="status-pass">PASS</td></tr>
+      <tr><td>7</td><td>Remaining count</td><td>After using 3 codes</td><td>7 remaining</td><td>Accurate count returned</td><td class="status-pass">PASS</td></tr>
+      <tr><td>8</td><td>MFA login flow</td><td>MFA-enabled user</td><td>Redirect to MFA</td><td>mfaRequired: true</td><td class="status-pass">PASS</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="s8-3">8.3 SSO Tests</h3>
+  <table>
+    <thead><tr><th>#</th><th>Scenario</th><th>Input</th><th>Expected Result</th><th>Actual Result</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Provider discovery</td><td>GET /sso/providers</td><td>List of providers</td><td>Empty (no env vars)</td><td class="status-pass">PASS</td></tr>
+      <tr><td>2</td><td>Provider configured</td><td>Google client ID set</td><td>Google in list</td><td>Provider with auth URL</td><td class="status-pass">PASS</td></tr>
+      <tr><td>3</td><td>OAuth initiate</td><td>GET /sso/initiate/google</td><td>Auth URL + state</td><td>URL generated, state stored</td><td class="status-pass">PASS</td></tr>
+      <tr><td>4</td><td>State validation</td><td>Valid state</td><td>State accepted</td><td>Timing-safe comparison</td><td class="status-pass">PASS</td></tr>
+      <tr><td>5</td><td>Invalid state</td><td>Wrong/expired state</td><td>403 Invalid</td><td>403 Forbidden</td><td class="status-pass">PASS</td></tr>
+      <tr><td>6</td><td>Auto-provision</td><td>New SSO email</td><td>User created</td><td>Created with viewer role</td><td class="status-pass">PASS</td></tr>
+      <tr><td>7</td><td>Account linking</td><td>Existing email + SSO</td><td>Provider linked</td><td>Provider linked</td><td class="status-pass">PASS</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="s8-4">8.4 Security Tests</h3>
+  <table>
+    <thead><tr><th>#</th><th>Scenario</th><th>Input</th><th>Expected</th><th>Actual</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>NoSQL injection (value)</td><td><code>{"email": "$gt:''"}</code></td><td>400 Blocked</td><td>400 "Invalid input detected"</td><td class="status-pass">PASS</td></tr>
+      <tr><td>2</td><td>NoSQL injection (key)</td><td><code>{"email": {"$gt":""}}</code></td><td>400 Blocked</td><td>400 "Invalid input detected"</td><td class="status-pass">PASS</td></tr>
+      <tr><td>3</td><td>XSS injection</td><td><code>{"name": "&lt;script&gt;..."}</code></td><td>400 Blocked</td><td>400 "Invalid input detected"</td><td class="status-pass">PASS</td></tr>
+      <tr><td>4</td><td>iframe injection</td><td><code>{"bio": "&lt;iframe&gt;..."}</code></td><td>400 Blocked</td><td>400 "Invalid input detected"</td><td class="status-pass">PASS</td></tr>
+      <tr><td>5</td><td>Security headers</td><td>Any request</td><td>All headers present</td><td>HSTS, X-Frame, CSP, etc.</td><td class="status-pass">PASS</td></tr>
+      <tr><td>6</td><td>Rate limiting</td><td>100+ req/min</td><td>429 Throttled</td><td>429 returned</td><td class="status-pass">PASS</td></tr>
+      <tr><td>7</td><td>Login rate limit</td><td>5+ logins/15min</td><td>429 Throttled</td><td>429 returned</td><td class="status-pass">PASS</td></tr>
+      <tr><td>8</td><td>Body size limit</td><td>Request &gt; 10KB</td><td>413 Rejected</td><td>Request rejected</td><td class="status-pass">PASS</td></tr>
+      <tr><td>9</td><td>Cache prevention</td><td>Any API response</td><td>no-store header</td><td>Header present</td><td class="status-pass">PASS</td></tr>
+      <tr><td>10</td><td>Clickjacking</td><td>Embed in iframe</td><td>X-Frame: DENY</td><td>Header present</td><td class="status-pass">PASS</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="s8-5">8.5 Frontend UX Tests</h3>
+  <table>
+    <thead><tr><th>#</th><th>Scenario</th><th>Expected Result</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Login page renders</td><td>Email/password form, SSO buttons if configured</td><td class="status-pass">PASS</td></tr>
+      <tr><td>2</td><td>SSO buttons appear</td><td>Only when providers are configured</td><td class="status-pass">PASS</td></tr>
+      <tr><td>3</td><td>MFA page</td><td>TOTP input + backup code toggle</td><td class="status-pass">PASS</td></tr>
+      <tr><td>4</td><td>Signup password strength</td><td>Real-time strength bar with 5 rules</td><td class="status-pass">PASS</td></tr>
+      <tr><td>5</td><td>Account lockout warning</td><td>Orange alert with remaining attempts</td><td class="status-pass">PASS</td></tr>
+      <tr><td>6</td><td>SSO callback processing</td><td>Loading spinner → success/error state</td><td class="status-pass">PASS</td></tr>
+      <tr><td>7</td><td>Dark mode</td><td>Full dark/light theme support</td><td class="status-pass">PASS</td></tr>
+      <tr><td>8</td><td>Responsive design</td><td>Mobile, tablet, desktop layouts</td><td class="status-pass">PASS</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-success">
+    <div class="callout-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg> Test Summary</div>
+    <strong>42 test cases executed</strong> across 5 categories — Authentication (9), MFA (8), SSO (7), Security (10), Frontend UX (8). All tests passed.
+  </div>
+</section>
+
+<hr>
+
+<!-- ═══════════════ 9. DEPLOYMENT ═══════════════ -->
+<section class="section" id="deployment">
+  <div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg> Section 9</div>
+  <h2>Deployment Architecture</h2>
+
+  <h3 id="s9-1">9.1 Required Environment Variables</h3>
+  <pre># Server
+PORT=4000
+NODE_ENV=production
+MONGODB_URI=mongodb://host:27018/afdb_beta
+REDIS_HOST=localhost
+REDIS_PORT=6379
+
+# JWT Secrets (use strong 256-bit random values)
+JWT_ACCESS_SECRET=&lt;256-bit-random-secret&gt;
+JWT_REFRESH_SECRET=&lt;256-bit-random-secret&gt;
+JWT_ACCESS_EXPIRY=30m
+JWT_REFRESH_EXPIRY=30d
+
+# CORS
+CORS_ORIGINS=https://portal.afdb.org,https://core.afdb.org
+
+# SSO — Google OAuth2
+GOOGLE_CLIENT_ID=&lt;google-oauth-client-id&gt;
+GOOGLE_CLIENT_SECRET=&lt;google-oauth-client-secret&gt;
+GOOGLE_REDIRECT_URI=https://api.afdb.org/api/v1/sso/callback/google
+
+# SSO — Microsoft / Azure AD
+MICROSOFT_CLIENT_ID=&lt;azure-ad-client-id&gt;
+MICROSOFT_CLIENT_SECRET=&lt;azure-ad-client-secret&gt;
+MICROSOFT_TENANT_ID=&lt;azure-tenant-id&gt;
+MICROSOFT_REDIRECT_URI=https://api.afdb.org/api/v1/sso/callback/microsoft
+
+# Frontend
+FRONTEND_URL=https://portal.afdb.org</pre>
+
+  <h3 id="s9-2">9.2 Production Readiness Checklist</h3>
+  <ul class="checklist">
+    <li>Set strong <code>JWT_ACCESS_SECRET</code> and <code>JWT_REFRESH_SECRET</code> (min 256-bit)</li>
+    <li>Configure MongoDB with authentication and TLS/SSL</li>
+    <li>Enable Redis persistence and authentication</li>
+    <li>Set <code>NODE_ENV=production</code></li>
+    <li>Configure TLS/SSL certificates for all endpoints</li>
+    <li>Set up Google and/or Microsoft OAuth2 credentials</li>
+    <li>Configure <code>CORS_ORIGINS</code> with production domains</li>
+    <li>Enable MongoDB audit logging</li>
+    <li>Set up log aggregation (Winston → centralized logging platform)</li>
+    <li>Configure health check monitoring on <code>/health</code></li>
+    <li>Set up alerting for account lockout events</li>
+    <li>Run security penetration testing before go-live</li>
+  </ul>
+</section>
+
+<hr>
+
+<!-- ═══════════════ 10. COMPLIANCE MATRIX ═══════════════ -->
+<section class="section" id="compliance">
+  <div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Section 10</div>
+  <h2>Compliance Matrix</h2>
+
+  <h3 id="s10-1">OWASP Top 10 (2021) — Full Coverage</h3>
+  <table>
+    <thead><tr><th>Category</th><th>Risk</th><th>Controls Implemented</th><th>Tests</th></tr></thead>
+    <tbody>
+      <tr><td><strong>A01:</strong> Broken Access Control</td><td style="color:var(--afdb-red);font-weight:600;">High</td><td>Helmet, CORS, X-Frame-Options, Auth Middleware, RBAC</td><td>5</td></tr>
+      <tr><td><strong>A02:</strong> Cryptographic Failures</td><td style="color:var(--afdb-red);font-weight:600;">High</td><td>bcrypt, HSTS, JWT, body limits, cache prevention</td><td>7</td></tr>
+      <tr><td><strong>A03:</strong> Injection</td><td style="color:var(--afdb-red);font-weight:600;">High</td><td>Input sanitizer (NoSQL + XSS), key sanitization, string limits</td><td>4</td></tr>
+      <tr><td><strong>A04:</strong> Insecure Design</td><td style="color:var(--afdb-red);font-weight:600;">High</td><td>Rate limiting, account lockout, password policy</td><td>3</td></tr>
+      <tr><td><strong>A05:</strong> Security Misconfiguration</td><td style="color:var(--afdb-orange);font-weight:600;">Medium</td><td>Helmet, Permissions-Policy, header hardening</td><td>6</td></tr>
+      <tr><td><strong>A06:</strong> Vulnerable Components</td><td style="color:var(--afdb-orange);font-weight:600;">Medium</td><td>Dependency pinning, regular audits (recommended)</td><td>N/A</td></tr>
+      <tr><td><strong>A07:</strong> Identification &amp; Authentication</td><td style="color:var(--afdb-red);font-weight:600;">High</td><td>Account lockout, MFA, password strength, token revocation</td><td>9</td></tr>
+      <tr><td><strong>A08:</strong> Software &amp; Data Integrity</td><td style="color:var(--afdb-orange);font-weight:600;">Medium</td><td>JWT verification, state validation</td><td>2</td></tr>
+      <tr><td><strong>A09:</strong> Logging &amp; Monitoring</td><td style="color:var(--afdb-orange);font-weight:600;">Medium</td><td>Morgan + Winston, security event logging</td><td>Verified</td></tr>
+      <tr><td><strong>A10:</strong> Server-Side Request Forgery</td><td style="color:var(--afdb-green);font-weight:600;">Low</td><td>No external URL fetching from user input (except SSO provider URLs)</td><td>N/A</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="s10-2">Password Policy (OWASP-Compliant)</h3>
+  <table>
+    <thead><tr><th>Requirement</th><th>Rule</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr><td>Minimum Length</td><td>8 characters</td><td><code>Password1!</code></td></tr>
+      <tr><td>Uppercase</td><td>At least 1</td><td><code><strong>P</strong>assword1!</code></td></tr>
+      <tr><td>Lowercase</td><td>At least 1</td><td><code>P<strong>assword</strong>1!</code></td></tr>
+      <tr><td>Digit</td><td>At least 1</td><td><code>Password<strong>1</strong>!</code></td></tr>
+      <tr><td>Special Character</td><td>At least 1</td><td><code>Password1<strong>!</strong></code></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<hr>
+
+<!-- ═══════════════ 11. APPENDICES ═══════════════ -->
+<section class="section" id="appendices">
+  <div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> Section 11</div>
+  <h2>Appendices</h2>
+
+  <h3 id="s11-a">Appendix A: User Data Model</h3>
+  <pre>{
+  email:            String (unique, indexed)
+  passwordHash:     String (bcrypt, 12 rounds)
+  firstName:        String
+  lastName:         String
+  role:             Enum ['admin', 'staff', 'viewer']
+  mfaEnabled:       Boolean (default: false)
+  mfaSecret:        String (TOTP secret)
+  mfaBackupCodes:   [{ codeHash: String, used: Boolean }]
+  ssoProvider:      String ('google' | 'microsoft')
+  ssoId:            String (provider's user ID)
+  isActive:         Boolean (default: true)
+  loginAttempts:    Number (default: 0)
+  lockUntil:        Date
+  lastLogin:        Date
+  passwordChangedAt: Date
+  createdAt:        Date (auto)
+  updatedAt:        Date (auto)
+}</pre>
+
+  <h3 id="s11-b">Appendix B: Token Lifecycle</h3>
+  <div class="arch-diagram">Login → Access Token (30 min) + Refresh Token (30 days)
+         │                        │
+         ├─ Expired? → Refresh ───┤
+         │                        ├─ Revoked? → Re-authenticate
+         │                        └─ Valid → New Access Token issued
+         │
+         ├─ Password Changed → All tokens revoked
+         ├─ Logout → All tokens revoked
+         └─ MFA Verified → Tokens issued</div>
+
+  <h3 id="s11-c">Appendix C: Security Event Log Examples</h3>
+  <pre>INFO  User created: admin@afdb.org
+INFO  MFA secret generated for user: 6a91c08b...
+INFO  MFA backup codes generated for user: 6a91c08b...
+INFO  MFA backup code used for user: 6a91c08b...
+WARN  Login attempt on locked account: admin@afdb.org
+WARN  Account locked due to 5 failed attempts: admin@afdb.org
+INFO  SSO: auto-provisioning user for user@org.com via google
+INFO  All tokens revoked for user: 6a91c08b...
+INFO  Password changed for user: 6a91c08b...</pre>
+
+  <h3 id="s11-d">Appendix D: Demo Credentials</h3>
+  <table>
+    <thead><tr><th>Credential</th><th>Value</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Email</td><td><code>admin@afdb.org</code></td><td>Admin role, MFA-capable</td></tr>
+      <tr><td>Password</td><td><code>Password123!</code></td><td>Meets OWASP password policy</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ── Footer ── -->
+<hr>
+<div style="text-align:center; padding:40px 0 60px; color:var(--afdb-gray);">
+  <div style="font-size:11px; text-transform:uppercase; letter-spacing:2px; margin-bottom:8px;">End of Document</div>
+  <p style="font-size:13px; margin-bottom:4px;">AfDB Secure Enterprise Portal — Security Implementation Proposal v1.0</p>
+  <p style="font-size:14px; margin-bottom:20px;">Prepared by <strong style="color:var(--afdb-navy);">Eng. Depute N.Alphonse, PMP&reg;</strong></p>
+
+  <!-- Contact Card -->
+  <div style="max-width:480px; margin:0 auto 24px; padding:24px 28px; background:var(--afdb-light); border:1px solid var(--afdb-border); border-radius:14px; text-align:left;">
+    <div style="font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--afdb-navy); font-weight:600; margin-bottom:14px;">Contact Information</div>
+
+    <!-- Name & Title -->
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid var(--afdb-border);">
+      <div style="width:42px; height:42px; border-radius:50%; background:var(--afdb-navy); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <div>
+        <div style="font-weight:600; color:var(--afdb-navy); font-size:14px;">Eng. Depute N.Alphonse, PMP&reg;</div>
+        <div style="font-size:12px; color:var(--afdb-gray);">Enterprise Software Architect &amp; Digital Transformation Consultant</div>
+      </div>
+    </div>
+
+    <!-- Email -->
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--afdb-green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      <a href="mailto:depute@atradezone.ca" style="color:#374151; text-decoration:none; font-size:13px;">depute@atradezone.ca</a>
+    </div>
+
+    <!-- Phone & Location -->
+    <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid var(--afdb-border); flex-wrap:wrap;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--afdb-green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        <a href="tel:+250782424845" style="color:#374151; text-decoration:none; font-size:13px;">+250 782 424 845</a>
+      </div>
+      <div style="width:1px; height:16px; background:var(--afdb-border);"></div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--afdb-green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span style="color:#374151; font-size:13px;">Kigali, Rwanda</span>
+      </div>
+    </div>
+
+    <!-- Profile Links -->
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <!-- Portfolio -->
+      <a href="https://atradezone.ca/deputenalphonse" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border-radius:8px; border:1px solid var(--afdb-border); background:#fff; text-decoration:none; font-size:12px; color:var(--afdb-navy); font-weight:500; transition:all 0.15s;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--afdb-green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg>
+        Portfolio
+      </a>
+      <!-- GitHub -->
+      <a href="https://github.com/deputee" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border-radius:8px; border:1px solid var(--afdb-border); background:#fff; text-decoration:none; font-size:12px; color:var(--afdb-navy); font-weight:500; transition:all 0.15s;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--afdb-navy)"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+        GitHub
+      </a>
+      <!-- LinkedIn -->
+      <a href="https://www.linkedin.com/in/deputenalphonse/" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border-radius:8px; border:1px solid var(--afdb-border); background:#fff; text-decoration:none; font-size:12px; color:var(--afdb-navy); font-weight:500; transition:all 0.15s;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--afdb-navy)"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+        LinkedIn
+      </a>
+      <!-- Instagram -->
+      <a href="https://www.instagram.com/deputenalphonse" target="_blank" rel="noopener" class="icon-tip" data-tip="Instagram" style="display:inline-flex; align-items:center; padding:7px 14px; border-radius:8px; border:1px solid var(--afdb-border); background:#fff; text-decoration:none; transition:all 0.15s;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--afdb-navy)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+      </a>
+      <!-- TikTok -->
+      <a href="https://www.tiktok.com/@deputenalphonse" target="_blank" rel="noopener" class="icon-tip" data-tip="TikTok" style="display:inline-flex; align-items:center; padding:7px 14px; border-radius:8px; border:1px solid var(--afdb-border); background:#fff; text-decoration:none; transition:all 0.15s;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--afdb-navy)"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15.2a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.73a8.19 8.19 0 0 0 4.76 1.52v-3.4a4.85 4.85 0 0 1-1-.16z"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <div style="margin-top:16px; display:flex; gap:8px; justify-content:center;">
+    <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--afdb-green);"></span>
+    <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--afdb-gold);"></span>
+    <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--afdb-navy);"></span>
+  </div>
+</div>
+
+</main>
+
+<!-- ── Mini TOC (right side) ── -->
+<aside class="mini-toc" id="miniToc">
+  <div class="mini-toc-label">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg>
+    On This Page
+  </div>
+  <div id="miniTocContent"></div>
+</aside>
+
+<!-- ── Back to Top (fixed) ── -->
+<a href="#top" id="backToTop" class="back-to-top" title="Back to top">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+  Top
+</a>
+
+<script>
+(function() {
+  // Section data: maps section IDs to their subsections
+  const sections = {
+    'executive-summary': { title: 'Executive Summary', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>', subs: [] },
+    'architecture': { title: 'System Architecture', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>', subs: [
+      { id: 's2-1', label: '2.1 High-Level Architecture' },
+      { id: 's2-2', label: '2.2 Authentication Flow' }
+    ]},
+    'tech-stack': { title: 'Technology Stack', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="2" x2="9" y2="4"/><line x1="15" y1="2" x2="15" y2="4"/></svg>', subs: [
+      { id: 's3-1', label: '3.1 Frontend' },
+      { id: 's3-2', label: '3.2 Backend' },
+      { id: 's3-3', label: '3.3 Infrastructure' }
+    ]},
+    'mfa': { title: 'MFA-Protected Access', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>', subs: [
+      { id: 's4-1', label: '4.1 Overview' },
+      { id: 's4-2', label: '4.2 TOTP Implementation' },
+      { id: 's4-3', label: '4.3 Backup Codes' },
+      { id: 's4-4', label: '4.4 MFA API Endpoints' },
+      { id: 's4-5', label: '4.5 MFA User Flow' }
+    ]},
+    'sso': { title: 'SSO-IDP Federation', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg>', subs: [
+      { id: 's5-1', label: '5.1 Overview' },
+      { id: 's5-2', label: '5.2 Identity Providers' },
+      { id: 's5-3', label: '5.3 Security Measures' },
+      { id: 's5-4', label: '5.4 SSO API Endpoints' },
+      { id: 's5-5', label: '5.5 Auth Sequence' }
+    ]},
+    'owasp': { title: 'OWASP Top 10 Compliance', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>', subs: [
+      { id: 's6-1', label: '6.1 Compliance by Category' },
+      { id: 's6-2', label: '6.2 Middleware Stack' }
+    ]},
+    'api': { title: 'API Reference', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>', subs: [
+      { id: 's7-1', label: '7.1 Authentication' },
+      { id: 's7-2', label: '7.2 MFA Endpoints' },
+      { id: 's7-3', label: '7.3 SSO Endpoints' }
+    ]},
+    'testing': { title: 'Testing & Results', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3h6v4H9z"/><path d="M7 7h10a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z"/></svg>', subs: [
+      { id: 's8-1', label: '8.1 Authentication' },
+      { id: 's8-2', label: '8.2 MFA' },
+      { id: 's8-3', label: '8.3 SSO' },
+      { id: 's8-4', label: '8.4 Security' },
+      { id: 's8-5', label: '8.5 Frontend UX' }
+    ]},
+    'deployment': { title: 'Deployment', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>', subs: [
+      { id: 's9-1', label: '9.1 Environment Variables' },
+      { id: 's9-2', label: '9.2 Readiness Checklist' }
+    ]},
+    'compliance': { title: 'Compliance Matrix', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>', subs: [
+      { id: 's10-1', label: 'OWASP Top 10 Coverage' },
+      { id: 's10-2', label: 'Password Policy' }
+    ]},
+    'appendices': { title: 'Appendices', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>', subs: [
+      { id: 's11-a', label: 'A: User Data Model' },
+      { id: 's11-b', label: 'B: Token Lifecycle' },
+      { id: 's11-c', label: 'C: Security Event Logs' },
+      { id: 's11-d', label: 'D: Demo Credentials' }
+    ]}
+  };
+
+  const tocContent = document.getElementById('miniTocContent');
+  let currentSection = null;
+
+  function updateToc(sectionId) {
+    if (currentSection === sectionId) return;
+    currentSection = sectionId;
+    const sec = sections[sectionId];
+    if (!sec) return;
+
+    let html = '<div class="mini-toc-section">' + sec.icon + sec.title + '</div>';
+    if (sec.subs.length > 0) {
+      sec.subs.forEach(function(sub) {
+        html += '<a href="#' + sub.id + '">' + sub.label + '</a>';
+      });
+    }
+    tocContent.innerHTML = html;
+  }
+
+  // Determine which section is currently in view
+  function getCurrentSection() {
+    const sectionEls = document.querySelectorAll('section.section[id]');
+    let best = null;
+    let bestTop = -Infinity;
+    const offset = 150; // px from top to consider "active"
+
+    sectionEls.forEach(function(el) {
+      const rect = el.getBoundingClientRect();
+      if (rect.top <= offset && rect.bottom > offset) {
+        best = el.id;
+      }
+    });
+    return best;
+  }
+
+  // Highlight active sub-link
+  function highlightActiveSub() {
+    const links = tocContent.querySelectorAll('a');
+    let activeId = null;
+    const offset = 150;
+
+    links.forEach(function(link) {
+      const targetId = link.getAttribute('href').substring(1);
+      const target = document.getElementById(targetId);
+      if (target) {
+        const rect = target.getBoundingClientRect();
+        if (rect.top <= offset) {
+          activeId = targetId;
+        }
+      }
+    });
+
+    links.forEach(function(link) {
+      const linkId = link.getAttribute('href').substring(1);
+      if (linkId === activeId) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
+    });
+  }
+
+  // Also highlight left sidebar active link
+  function highlightSidebar(sectionId) {
+    const sidebarLinks = document.querySelectorAll('.sidebar-links a');
+    sidebarLinks.forEach(function(link) {
+      const href = link.getAttribute('href');
+      if (href === '#' + sectionId) {
+        link.style.background = 'rgba(255,255,255,0.7)';
+        link.style.color = 'var(--afdb-navy)';
+        link.style.fontWeight = '600';
+        link.style.border = '1px solid rgba(229,231,235,0.6)';
+        link.style.borderRadius = '8px';
+        link.style.boxShadow = '0 4px 16px rgba(0,0,0,0.04), 0 1px 4px rgba(0,0,0,0.02)';
+      } else {
+        link.style.background = '';
+        link.style.color = '';
+        link.style.fontWeight = '';
+        link.style.border = '1px solid transparent';
+        link.style.borderRadius = '';
+        link.style.boxShadow = '';
+      }
+    });
+  }
+
+  function onScroll() {
+    const sectionId = getCurrentSection();
+    if (sectionId) {
+      updateToc(sectionId);
+      highlightActiveSub();
+      highlightSidebar(sectionId);
+    }
+    var btn = document.getElementById('backToTop');
+    if (btn) {
+      if (window.scrollY > 400) { btn.classList.add('visible'); }
+      else { btn.classList.remove('visible'); }
+    }
+  }
+
+  // Throttle scroll handler
+  let ticking = false;
+  window.addEventListener('scroll', function() {
+    if (!ticking) {
+      requestAnimationFrame(function() {
+        onScroll();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  });
+
+  // Initialize on load
+  onScroll();
+})();
+
+// ── Live Search ──
+(function() {
+  const input = document.getElementById('sidebarSearch');
+  const clearBtn = document.getElementById('searchClear');
+  const resultsEl = document.getElementById('searchResults');
+  if (!input || !resultsEl) return;
+
+  // Section name mapping
+  const sectionNames = {
+    'executive-summary': 'Executive Summary',
+    'architecture': 'System Architecture',
+    'tech-stack': 'Technology Stack',
+    'mfa': 'MFA-Protected Access',
+    'sso': 'SSO-IDP Federation',
+    'owasp': 'OWASP Top 10 Compliance',
+    'api': 'API Reference',
+    'testing': 'Testing & Results',
+    'deployment': 'Deployment',
+    'compliance': 'Compliance Matrix',
+    'appendices': 'Appendices'
+  };
+
+  // Build search index from content
+  function buildIndex() {
+    const entries = [];
+    const sections = document.querySelectorAll('section.section[id]');
+    sections.forEach(function(sec) {
+      const secId = sec.id;
+      const secName = sectionNames[secId] || secId;
+      // Index headings
+      sec.querySelectorAll('h2, h3, h4').forEach(function(h) {
+        entries.push({ type: 'heading', text: h.textContent.trim(), section: secName, targetId: h.id || secId, el: h });
+      });
+      // Index table cells
+      sec.querySelectorAll('td').forEach(function(td) {
+        const text = td.textContent.trim();
+        if (text.length > 3 && text.length < 200) {
+          // Find nearest heading ancestor or section
+          const row = td.closest('tr');
+          const table = td.closest('table');
+          const prevH = table ? table.previousElementSibling : null;
+          let context = '';
+          if (prevH && (prevH.tagName === 'H3' || prevH.tagName === 'H4')) {
+            context = prevH.textContent.trim() + ' — ';
+          }
+          entries.push({ type: 'cell', text: text, section: secName, targetId: secId, context: context, el: td });
+        }
+      });
+      // Index paragraphs
+      sec.querySelectorAll('p').forEach(function(p) {
+        const text = p.textContent.trim();
+        if (text.length > 10) {
+          entries.push({ type: 'text', text: text, section: secName, targetId: secId, el: p });
+        }
+      });
+      // Index list items
+      sec.querySelectorAll('li').forEach(function(li) {
+        const text = li.textContent.trim();
+        if (text.length > 5 && text.length < 200) {
+          entries.push({ type: 'text', text: text, section: secName, targetId: secId, el: li });
+        }
+      });
+      // Index code/pre blocks
+      sec.querySelectorAll('pre, code').forEach(function(block) {
+        const text = block.textContent.trim();
+        if (text.length > 3 && text.length < 300) {
+          entries.push({ type: 'code', text: text, section: secName, targetId: secId, el: block });
+        }
+      });
+    });
+    return entries;
+  }
+
+  let index = null;
+  function getIndex() {
+    if (!index) index = buildIndex();
+    return index;
+  }
+
+  function escapeHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function highlightMatch(text, query) {
+    if (!query) return escapeHtml(text.substring(0, 100));
+    const idx = text.toLowerCase().indexOf(query.toLowerCase());
+    if (idx === -1) return escapeHtml(text.substring(0, 100));
+    const start = Math.max(0, idx - 30);
+    const end = Math.min(text.length, idx + query.length + 50);
+    let snippet = (start > 0 ? '...' : '') + text.substring(start, end) + (end < text.length ? '...' : '');
+    const snippetIdx = snippet.toLowerCase().indexOf(query.toLowerCase());
+    if (snippetIdx === -1) return escapeHtml(snippet);
+    const before = escapeHtml(snippet.substring(0, snippetIdx));
+    const match = escapeHtml(snippet.substring(snippetIdx, snippetIdx + query.length));
+    const after = escapeHtml(snippet.substring(snippetIdx + query.length));
+    return before + '<mark>' + match + '</mark>' + after;
+  }
+
+  function search(query) {
+    if (!query || query.length < 2) {
+      resultsEl.classList.remove('visible');
+      resultsEl.innerHTML = '';
+      return;
+    }
+    const entries = getIndex();
+    const q = query.toLowerCase();
+    const matches = entries.filter(function(e) {
+      return e.text.toLowerCase().indexOf(q) !== -1;
+    });
+
+    // Deduplicate and prioritize
+    const seen = {};
+    const unique = [];
+    // Headings first, then cells, then text
+    const priority = { heading: 0, cell: 1, text: 2, code: 3 };
+    matches.sort(function(a, b) { return (priority[a.type] || 9) - (priority[b.type] || 9); });
+
+    matches.forEach(function(m) {
+      const key = m.targetId + '|' + m.text.substring(0, 60);
+      if (!seen[key]) {
+        seen[key] = true;
+        unique.push(m);
+      }
+    });
+
+    const top = unique.slice(0, 12);
+    if (top.length === 0) {
+      resultsEl.innerHTML = '<div class="search-no-results">No results found for "' + escapeHtml(query) + '"</div>';
+      resultsEl.classList.add('visible');
+      return;
+    }
+
+    let html = '';
+    top.forEach(function(m) {
+      const prefix = m.context || '';
+      html += '<a class="search-result-item" href="#' + m.targetId + '" data-target="' + m.targetId + '">';
+      html += '<div class="sr-section">' + escapeHtml(m.section) + '</div>';
+      html += '<div class="sr-text">' + prefix + highlightMatch(m.text, query) + '</div>';
+      html += '</a>';
+    });
+    resultsEl.innerHTML = html;
+    resultsEl.classList.add('visible');
+
+    // Click handler for results
+    resultsEl.querySelectorAll('.search-result-item').forEach(function(item) {
+      item.addEventListener('click', function(e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('data-target');
+        const target = document.getElementById(targetId);
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          // Brief highlight
+          target.style.transition = 'background 0.3s';
+          target.style.background = '#FEF3C7';
+          setTimeout(function() { target.style.background = ''; }, 2000);
+        }
+        resultsEl.classList.remove('visible');
+        input.value = '';
+        clearBtn.style.display = 'none';
+      });
+    });
+  }
+
+  let debounceTimer;
+  input.addEventListener('input', function() {
+    const val = input.value.trim();
+    clearBtn.style.display = val.length > 0 ? 'flex' : 'none';
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(function() { search(val); }, 200);
+  });
+
+  clearBtn.addEventListener('click', function() {
+    input.value = '';
+    clearBtn.style.display = 'none';
+    resultsEl.classList.remove('visible');
+    resultsEl.innerHTML = '';
+    input.focus();
+  });
+
+  // Close results on outside click
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.sidebar-search')) {
+      resultsEl.classList.remove('visible');
+    }
+  });
+
+  // Keyboard shortcut: Ctrl+K or Cmd+K to focus search
+  document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      e.preventDefault();
+      input.focus();
+      input.select();
+    }
+    if (e.key === 'Escape') {
+      resultsEl.classList.remove('visible');
+      input.blur();
+    }
+  });
+})();
+</script>
+
+</div>
+</body>
+</html>
