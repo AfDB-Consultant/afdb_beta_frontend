@@ -8,6 +8,9 @@
 <meta http-equiv="Expires" content="0">
 <title>AfDB Secure Enterprise Portal — Security Implementation Proposal</title>
 <link href="https://fonts.googleapis.com/css2?family=Afacad:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+(function(){var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();
+</script>
 <style>
   :root {
     --afdb-green: #006837;
@@ -147,12 +150,13 @@
     color: var(--afdb-gray); margin-bottom: 16px; font-weight: 600;
     display: flex; align-items: center; gap: 6px;
   }
+  .sidebar-title:hover { background: none !important; border-color: transparent !important; box-shadow: none !important; }
   .sidebar-title svg { width: 14px; height: 14px; stroke: var(--afdb-gray); }
   .sidebar-links { flex: 1; }
   .sidebar a {
     display: flex; align-items: center; gap: 8px;
-    padding: 7px 12px; font-size: 13px; color: #374151;
-    text-decoration: none; border-radius: 8px; margin-bottom: 2px; transition: all 0.2s;
+    padding: 5px 12px; font-size: 16px; line-height: 1.2; color: #374151;
+    text-decoration: none; border-radius: 8px; margin-bottom: 1px; transition: all 0.2s;
     border: 1px solid transparent;
   }
   .sidebar a svg { width: 15px; height: 15px; flex-shrink: 0; opacity: 0.55; transition: opacity 0.15s; }
@@ -173,9 +177,10 @@
   }
   .sidebar-footer-logo {
     width: 28px; height: 28px; border-radius: 8px;
-    background: linear-gradient(135deg, var(--afdb-navy) 0%, #2D4470 100%);
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    overflow: hidden;
   }
+  .sidebar-footer-logo img { width: 100%; height: 100%; object-fit: contain; }
   .sidebar-footer-brand-text {
     font-size: 11px; font-weight: 600; color: var(--afdb-navy); line-height: 1.3;
   }
@@ -183,9 +188,9 @@
     font-size: 10px; font-weight: 400; color: var(--afdb-gray);
   }
   .sidebar-footer-meta {
-    display: flex; gap: 12px; font-size: 10px; color: #9CA3AF; margin-top: 6px;
+    display: flex; flex-direction: column; gap: 4px; font-size: 10px; color: #9CA3AF; margin-top: 6px;
   }
-  .sidebar-footer-meta span { display: flex; align-items: center; gap: 3px; }
+  .sidebar-footer-meta span { display: flex; align-items: center; gap: 3px; white-space: nowrap; }
   .sidebar-footer-meta svg { width: 10px; height: 10px; }
   .sidebar-footer-meta a:hover { color: #1B2A4A; }
   .sidebar-footer-meta a:hover svg { stroke: #1B2A4A; }
@@ -402,6 +407,25 @@
   .icon-tip:hover::after { opacity: 1; transform: translateX(-50%) translateY(0); }
   .icon-tip:hover::before { opacity: 1; }
 
+  /* ── Profile Links ── */
+  .profile-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: 8px;
+    border: 1px solid var(--afdb-border); background: #fff;
+    text-decoration: none; font-size: 12px; color: var(--afdb-navy);
+    font-weight: 500; transition: all 0.15s;
+  }
+  .profile-link:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .profile-link-icon {
+    display: inline-flex; align-items: center; padding: 7px 14px;
+    border-radius: 8px; border: 1px solid var(--afdb-border); background: #fff;
+    text-decoration: none; transition: all 0.15s;
+  }
+  .profile-link-icon:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+
+  /* ── Contact Link ── */
+  .contact-link { color: #374151; text-decoration: none; font-size: 13px; }
+
   /* ── Flow Diagram ── */
   .flow-steps { display: flex; gap: 0; margin: 20px 0 30px; flex-wrap: wrap; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
   .flow-step {
@@ -465,6 +489,155 @@
     .flow-steps { flex-direction: column; }
     .flow-step { border-radius: 0 !important; }
   }
+
+  /* ── Dark Mode ── */
+  [data-theme="dark"] {
+    --afdb-green: #22C55E;
+    --afdb-gold: #E2C46E;
+    --afdb-navy: #93A8CC;
+    --afdb-light: #13161D;
+    --afdb-gray: #9CA3AF;
+    --afdb-border: #2D3342;
+    --afdb-red: #F87171;
+    --afdb-orange: #FBBF24;
+    --afdb-blue: #60A5FA;
+    --pass-green: #4ADE80;
+    --code-bg: #0D1117;
+    --code-text: #C9D1D9;
+  }
+  [data-theme="dark"] body {
+    color: #D1D5DB; background: #0B0D12;
+  }
+  /* Cover */
+  [data-theme="dark"] .cover { background: #0B0D12; }
+  [data-theme="dark"] .cover-logo { background: #fff; border-radius: 24px; padding: 12px; }
+  [data-theme="dark"] .cover::before { background: radial-gradient(circle, rgba(34,197,94,0.06) 0%, transparent 70%); }
+  [data-theme="dark"] .cover::after { background: radial-gradient(circle, rgba(226,196,110,0.06) 0%, transparent 70%); }
+  [data-theme="dark"] .cover-badge { background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.2); color: var(--afdb-green); }
+  [data-theme="dark"] .cover h1 { background: linear-gradient(135deg, #93A8CC 0%, #60A5FA 100%); -webkit-background-clip: text; background-clip: text; }
+  [data-theme="dark"] .cover-meta-item {
+    background: rgba(19,22,29,0.8); border-color: rgba(45,51,66,0.8);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2), 0 1px 4px rgba(0,0,0,0.1);
+  }
+  [data-theme="dark"] .cover-meta-item:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.15); }
+  [data-theme="dark"] .cover-decor { border-color: rgba(34,197,94,0.06); background: rgba(34,197,94,0.02); }
+  [data-theme="dark"] .cover-decor-2 { border-color: rgba(226,196,110,0.08); background: rgba(226,196,110,0.02); }
+  [data-theme="dark"] .cover-decor-3 { border-color: rgba(147,168,204,0.06); background: rgba(147,168,204,0.01); }
+  /* Sidebar */
+  [data-theme="dark"] .sidebar { background: #0F1218; border-right-color: var(--afdb-border); }
+  [data-theme="dark"] .sidebar a { color: #D1D5DB; }
+  [data-theme="dark"] .sidebar a:hover {
+    background: rgba(30,35,48,0.7); color: #E5E7EB;
+    border-color: rgba(45,51,66,0.6); box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  [data-theme="dark"] .sidebar-footer { border-top-color: var(--afdb-border); }
+  [data-theme="dark"] .sidebar-footer-logo { background: #fff; border-radius: 6px; padding: 3px; }
+  [data-theme="dark"] .sidebar-footer-brand-text { color: #D1D5DB; }
+  [data-theme="dark"] .sidebar-footer-meta a:hover { color: #E5E7EB; }
+  [data-theme="dark"] .sidebar-footer-meta a:hover svg { stroke: #E5E7EB; }
+  /* Search */
+  [data-theme="dark"] .sidebar-search input {
+    background: #13161D; border-color: var(--afdb-border); color: #D1D5DB;
+  }
+  [data-theme="dark"] .sidebar-search input:focus { border-color: var(--afdb-green); box-shadow: 0 0 0 3px rgba(34,197,94,0.12); }
+  [data-theme="dark"] .sidebar-search-clear { background: #2D3342; color: #9CA3AF; }
+  [data-theme="dark"] .sidebar-search-clear:hover { background: #3D4455; }
+  [data-theme="dark"] .search-results { background: #13161D; border-color: var(--afdb-border); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+  [data-theme="dark"] .search-result-item { color: #D1D5DB; border-bottom-color: #1E2330; }
+  [data-theme="dark"] .search-result-item:hover { background: #1A1F2A; }
+  [data-theme="dark"] .search-result-item .sr-text mark { background: #854D0E; color: #FEF3C7; }
+  [data-theme="dark"] .content mark.search-highlight { background: #854D0E; color: #FEF3C7; box-shadow: 0 0 0 2px #854D0E; }
+  /* Mini TOC */
+  [data-theme="dark"] .mini-toc { border-left-color: var(--afdb-border); }
+  [data-theme="dark"] .mini-toc-section { border-bottom-color: var(--afdb-border); }
+  [data-theme="dark"] .mini-toc a:hover {
+    background: rgba(30,35,48,0.7); border-color: rgba(45,51,66,0.6);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15); color: #D1D5DB;
+  }
+  [data-theme="dark"] .mini-toc a.active {
+    background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.2);
+    box-shadow: 0 4px 12px rgba(34,197,94,0.08);
+  }
+  /* Back to top */
+  [data-theme="dark"] .back-to-top {
+    background: rgba(19,22,29,0.9); border-color: rgba(45,51,66,0.8);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3); color: #D1D5DB;
+  }
+  [data-theme="dark"] .back-to-top:hover { background: #1A1F2A; box-shadow: 0 6px 20px rgba(0,0,0,0.4); }
+  /* Content */
+  [data-theme="dark"] h2, [data-theme="dark"] h3 { color: #D1D5DB; }
+  [data-theme="dark"] h4 { color: #D1D5DB; }
+  [data-theme="dark"] p, [data-theme="dark"] ul, [data-theme="dark"] ol { color: #9CA3AF; }
+  [data-theme="dark"] strong { color: #E5E7EB; }
+  [data-theme="dark"] hr { border-top-color: #2D3342; }
+  /* Tables */
+  [data-theme="dark"] table { box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+  [data-theme="dark"] thead th { background: #1A1F2A; }
+  [data-theme="dark"] tbody td { color: #9CA3AF; }
+  [data-theme="dark"] tbody tr:hover { background: #13161D; }
+  /* Code */
+  [data-theme="dark"] pre { border-color: rgba(45,51,66,0.6); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+  [data-theme="dark"] p code, [data-theme="dark"] li code, [data-theme="dark"] td code {
+    background: #1A1F2A; color: #93A8CC;
+  }
+  /* Callouts */
+  [data-theme="dark"] .callout-info { background: rgba(37,99,235,0.1); border-color: rgba(96,165,250,0.2); color: #93C5FD; }
+  [data-theme="dark"] .callout-warn { background: rgba(245,158,11,0.1); border-color: rgba(251,191,36,0.2); color: #FDE68A; }
+  [data-theme="dark"] .callout-success { background: rgba(34,197,94,0.1); border-color: rgba(74,222,128,0.2); color: #86EFAC; }
+  /* Pillar cards */
+  [data-theme="dark"] .pillar-card { background: #13161D; border-color: var(--afdb-border); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+  [data-theme="dark"] .pillar-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+  [data-theme="dark"] .pillar-status.active { background: rgba(34,197,94,0.15); color: #4ADE80; }
+  /* Architecture diagram */
+  [data-theme="dark"] .arch-diagram { background: var(--afdb-light); border-color: var(--afdb-border); color: #9CA3AF; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+  /* Flow steps */
+  [data-theme="dark"] .flow-step { background: var(--afdb-light); border-color: var(--afdb-border); }
+  [data-theme="dark"] .flow-step strong { color: #D1D5DB; }
+  /* Middleware stack */
+  [data-theme="dark"] .mw-item { border-color: var(--afdb-border); }
+  [data-theme="dark"] .mw-num { background: #1A1F2A; }
+  [data-theme="dark"] .mw-name { color: #D1D5DB; }
+  /* Checklist */
+  [data-theme="dark"] .checklist li { border-bottom-color: #1E2330; }
+  [data-theme="dark"] .checklist li::before { border-color: #3D4455; }
+  /* Icon tooltip */
+  [data-theme="dark"] .icon-tip::after { background: #1A1F2A; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+  [data-theme="dark"] .icon-tip::before { border-top-color: #1A1F2A; }
+  /* Profile links */
+  [data-theme="dark"] .profile-link { background: #13161D; border-color: var(--afdb-border); color: #D1D5DB; }
+  [data-theme="dark"] .profile-link:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+  [data-theme="dark"] .profile-link-icon { background: #13161D; border-color: var(--afdb-border); }
+  [data-theme="dark"] .profile-link-icon:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+  /* Contact links */
+  [data-theme="dark"] .contact-link { color: #D1D5DB; }
+
+  /* ── Theme Toggle Button ── */
+  .theme-toggle {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); z-index: 100;
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 20px; border-radius: 50px;
+    background: rgba(255,255,255,0.9); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(229,231,235,0.6);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.05);
+    cursor: pointer; font-family: var(--font-primary);
+    font-size: 12px; font-weight: 500; color: var(--afdb-navy);
+    transition: all 0.3s;
+    user-select: none;
+  }
+  .theme-toggle:hover {
+    box-shadow: 0 6px 24px rgba(0,0,0,0.14), 0 2px 6px rgba(0,0,0,0.06);
+    transform: translateX(-50%) translateY(-2px);
+  }
+  .theme-toggle svg { width: 18px; height: 18px; transition: transform 0.4s; }
+  .theme-toggle .icon-sun { display: none; }
+  .theme-toggle .icon-moon { display: block; }
+  [data-theme="dark"] .theme-toggle {
+    background: rgba(19,22,29,0.9); border-color: rgba(45,51,66,0.8);
+    color: #D1D5DB; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  [data-theme="dark"] .theme-toggle:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.4); transform: translateX(-50%) translateY(-2px); }
+  [data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+  [data-theme="dark"] .theme-toggle .icon-moon { display: none; }
 </style>
 </head>
 <body>
@@ -476,7 +649,7 @@
   <div class="cover-decor cover-decor-2"></div>
   <div class="cover-decor cover-decor-3"></div>
 
-  <div class="cover-logo"><img src="https://di9mr54a05a64.cloudfront.net/api-iatf.expoplatform.com/image/MTc1NTg2MTYxNjY4YTg1MjcwNjk0MjI=.png" alt="AfDB Official Logo" /></div>
+  <div class="cover-logo"><img src="https://raw.githubusercontent.com/AfDB-Consultant/afdb_beta_frontend/refs/heads/main/src/public/images/afbd-main-logo.png" alt="AfDB Official Logo" /></div>
   <div class="cover-badge">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
     Proposal Document
@@ -529,7 +702,7 @@
   <div class="sidebar-footer">
     <div class="sidebar-footer-brand">
       <div class="sidebar-footer-logo">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+        <img src="https://raw.githubusercontent.com/AfDB-Consultant/afdb_beta_frontend/refs/heads/main/src/public/images/afbd-main-logo.png" alt="AfDB Logo" />
       </div>
       <div>
         <div class="sidebar-footer-brand-text">AfDB Secure Portal</div>
@@ -537,8 +710,7 @@
       </div>
     </div>
     <div class="sidebar-footer-meta">
-      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> <a href="https://atradezone.ca/deputenalphonse" target="_blank" rel="noopener" style="color:inherit; text-decoration:none; background:none;">Eng. Depute N.Alphonse</a></span>
-      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Aug 2026</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> <a href="https://atradezone.ca/deputenalphonse" target="_blank" rel="noopener" style="color:inherit; text-decoration:none; background:none;">Eng. Depute N.Alphonse, PMP&reg;</a></span>
     </div>
   </div>
 </nav>
@@ -595,52 +767,9 @@
   <h2>System Architecture</h2>
 
   <h3 id="s2-1">2.1 High-Level Architecture</h3>
-  <div class="arch-diagram">┌─────────────────────────────────────────────────────────────────────────────────┐
-│                         CLIENT LAYER  (Web Browsers)                            │
-└──────────────────────────────┬──────────────────────────────────────────────────┘
-                               │  HTTPS
-            ┌──────────────────┴──────────────────┐
-            ▼                                      ▼
-┌────────────────────┐                ┌────────────────────┐
-│  BETA FRONTEND     │                │  CORE FRONTEND     │
-│  Next.js  :3000    │                │  Next.js  :3001    │
-│  ─────────────     │                │  ──────────────    │
-│  • Login / MFA     │                │  • Dashboard       │
-│  • SSO Redirect    │                │  • Projects        │
-│  • Auth Flows      │                │  • Reports         │
-└────────┬───────────┘                └──────────┬─────────┘
-         │  REST / JSON                          │  JWT
-         ▼                                       ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    API GATEWAY  (Express.js)                 │
-│              JWT Validation  •  Rate Limiting                │
-│              CORS Handling   •  Request Routing              │
-└────────┬──────────────────────────────────┬─────────────────┘
-         │                                   │
-         ▼                                   ▼
-┌────────────────────┐                ┌────────────────────┐
-│  BETA BACKEND      │                │  CORE BACKEND      │
-│  Node.js   :4000   │                │  Node.js   :4001   │
-│  ──────────────    │                │  ──────────────    │
-│  • Auth Service    │                │  • Project Svc     │
-│  • MFA  (TOTP)    │                │  • Dashboard Svc   │
-│  • SSO  (OAuth2)  │                │  • Report Svc      │
-│  • OWASP Shield    │                │  • Data Access     │
-└────────┬───────────┘                └──────────┬─────────┘
-         │                                        │
-         ▼                                        ▼
-┌─────────────────────────────────────────────────────────────┐
-│                       DATA LAYER                             │
-│                                                              │
-│   ┌──────────────────────┐     ┌──────────────────────┐     │
-│   │   PostgreSQL  :5432  │     │     Redis  :6379     │     │
-│   │   ─────────────────  │     │     ────────────     │     │
-│   │   • Users &amp; Roles   │     │   • Session Store    │     │
-│   │   • MFA Secrets      │     │   • Rate Limit Cnt   │     │
-│   │   • Audit Logs       │     │   • Token Cache      │     │
-│   │   • App Data         │     │   • SSO State        │     │
-│   └──────────────────────┘     └──────────────────────┘     │
-└─────────────────────────────────────────────────────────────┘</div>
+  <div style="margin:20px 0 30px; text-align:center;">
+    <img src="https://raw.githubusercontent.com/AfDB-Consultant/afdb_beta_frontend/refs/heads/main/src/public/images/high_level_architecture.png" alt="AfDB Secure Portal — High-Level System Architecture" style="max-width:100%; height:auto; border:1px solid var(--afdb-border); border-radius:12px; box-shadow:0 4px 16px rgba(0,0,0,0.06);" />
+  </div>
 
   <h3 id="s2-2">2.2 Authentication Flow</h3>
   <div class="flow-steps">
@@ -1246,8 +1375,8 @@ INFO  Password changed for user: 6a91c08b...</pre>
 
     <!-- Name & Title -->
     <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid var(--afdb-border);">
-      <div style="width:42px; height:42px; border-radius:50%; background:var(--afdb-navy); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <div style="width:42px; height:42px; border-radius:50%; overflow:hidden; flex-shrink:0; border:2px solid var(--afdb-border);">
+        <img src="https://atradezone.ca/deputenalphonse/profile.jpg" alt="Eng. Depute N.Alphonse" style="width:100%; height:100%; object-fit:cover;" />
       </div>
       <div>
         <div style="font-weight:600; color:var(--afdb-navy); font-size:14px;">Eng. Depute N.Alphonse, PMP&reg;</div>
@@ -1258,45 +1387,45 @@ INFO  Password changed for user: 6a91c08b...</pre>
     <!-- Email -->
     <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--afdb-green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-      <a href="mailto:depute@atradezone.ca" style="color:#374151; text-decoration:none; font-size:13px;">depute@atradezone.ca</a>
+      <a href="mailto:depute@atradezone.ca" class="contact-link">depute@atradezone.ca</a>
     </div>
 
     <!-- Phone & Location -->
     <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid var(--afdb-border); flex-wrap:wrap;">
       <div style="display:flex; align-items:center; gap:8px;">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--afdb-green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-        <a href="tel:+250782424845" style="color:#374151; text-decoration:none; font-size:13px;">+250 782 424 845</a>
+        <a href="tel:+250782424845" class="contact-link">+250 782 424 845</a>
       </div>
       <div style="width:1px; height:16px; background:var(--afdb-border);"></div>
       <div style="display:flex; align-items:center; gap:8px;">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--afdb-green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        <span style="color:#374151; font-size:13px;">Kigali, Rwanda</span>
+        <span class="contact-link">Kigali, Rwanda</span>
       </div>
     </div>
 
     <!-- Profile Links -->
     <div style="display:flex; gap:10px; flex-wrap:wrap;">
       <!-- Portfolio -->
-      <a href="https://atradezone.ca/deputenalphonse" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border-radius:8px; border:1px solid var(--afdb-border); background:#fff; text-decoration:none; font-size:12px; color:var(--afdb-navy); font-weight:500; transition:all 0.15s;">
+      <a href="https://atradezone.ca/deputenalphonse" target="_blank" rel="noopener" class="profile-link">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--afdb-green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg>
         Portfolio
       </a>
       <!-- GitHub -->
-      <a href="https://github.com/deputee" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border-radius:8px; border:1px solid var(--afdb-border); background:#fff; text-decoration:none; font-size:12px; color:var(--afdb-navy); font-weight:500; transition:all 0.15s;">
+      <a href="https://github.com/deputee" target="_blank" rel="noopener" class="profile-link">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--afdb-navy)"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
         GitHub
       </a>
       <!-- LinkedIn -->
-      <a href="https://www.linkedin.com/in/deputenalphonse/" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border-radius:8px; border:1px solid var(--afdb-border); background:#fff; text-decoration:none; font-size:12px; color:var(--afdb-navy); font-weight:500; transition:all 0.15s;">
+      <a href="https://www.linkedin.com/in/deputenalphonse/" target="_blank" rel="noopener" class="profile-link">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--afdb-navy)"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
         LinkedIn
       </a>
       <!-- Instagram -->
-      <a href="https://www.instagram.com/deputenalphonse" target="_blank" rel="noopener" class="icon-tip" data-tip="Instagram" style="display:inline-flex; align-items:center; padding:7px 14px; border-radius:8px; border:1px solid var(--afdb-border); background:#fff; text-decoration:none; transition:all 0.15s;">
+      <a href="https://www.instagram.com/deputenalphonse" target="_blank" rel="noopener" class="profile-link-icon icon-tip" data-tip="Instagram">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--afdb-navy)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
       </a>
       <!-- TikTok -->
-      <a href="https://www.tiktok.com/@deputenalphonse" target="_blank" rel="noopener" class="icon-tip" data-tip="TikTok" style="display:inline-flex; align-items:center; padding:7px 14px; border-radius:8px; border:1px solid var(--afdb-border); background:#fff; text-decoration:none; transition:all 0.15s;">
+      <a href="https://www.tiktok.com/@deputenalphonse" target="_blank" rel="noopener" class="profile-link-icon icon-tip" data-tip="TikTok">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--afdb-navy)"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15.2a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.73a8.19 8.19 0 0 0 4.76 1.52v-3.4a4.85 4.85 0 0 1-1-.16z"/></svg>
       </a>
     </div>
@@ -1449,16 +1578,17 @@ INFO  Password changed for user: 6a91c08b...</pre>
 
   // Also highlight left sidebar active link
   function highlightSidebar(sectionId) {
+    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     const sidebarLinks = document.querySelectorAll('.sidebar-links a');
     sidebarLinks.forEach(function(link) {
       const href = link.getAttribute('href');
       if (href === '#' + sectionId) {
-        link.style.background = 'rgba(255,255,255,0.7)';
+        link.style.background = isDark ? 'rgba(30,35,48,0.7)' : 'rgba(255,255,255,0.7)';
         link.style.color = 'var(--afdb-navy)';
         link.style.fontWeight = '600';
-        link.style.border = '1px solid rgba(229,231,235,0.6)';
+        link.style.border = isDark ? '1px solid rgba(45,51,66,0.6)' : '1px solid rgba(229,231,235,0.6)';
         link.style.borderRadius = '8px';
-        link.style.boxShadow = '0 4px 16px rgba(0,0,0,0.04), 0 1px 4px rgba(0,0,0,0.02)';
+        link.style.boxShadow = isDark ? '0 4px 16px rgba(0,0,0,0.15), 0 1px 4px rgba(0,0,0,0.08)' : '0 4px 16px rgba(0,0,0,0.04), 0 1px 4px rgba(0,0,0,0.02)';
       } else {
         link.style.background = '';
         link.style.color = '';
@@ -1702,5 +1832,45 @@ INFO  Password changed for user: 6a91c08b...</pre>
 </script>
 
 </div>
+
+<!-- Theme Toggle Button -->
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+  <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+  </svg>
+  <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+  </svg>
+  <span class="toggle-label">Dark</span>
+</button>
+
+<script>
+(function() {
+  var toggle = document.getElementById('themeToggle');
+  var label = toggle.querySelector('.toggle-label');
+  var root = document.documentElement;
+
+  // Apply saved theme on load
+  var saved = localStorage.getItem('theme');
+  if (saved === 'dark') {
+    root.setAttribute('data-theme', 'dark');
+    label.textContent = 'Light';
+  }
+
+  toggle.addEventListener('click', function() {
+    var isDark = root.getAttribute('data-theme') === 'dark';
+    if (isDark) {
+      root.removeAttribute('data-theme');
+      localStorage.setItem('theme', 'light');
+      label.textContent = 'Dark';
+    } else {
+      root.setAttribute('data-theme', 'dark');
+      localStorage.setItem('theme', 'dark');
+      label.textContent = 'Light';
+    }
+  });
+})();
+</script>
+
 </body>
 </html>

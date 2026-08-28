@@ -1,9 +1,5 @@
 <div align="center">
 
-<img src="public/images/high_level_architecture.png" alt="AfDB Secure Enterprise Portal Architecture" width="100%" />
-
-<br/><br/>
-
 # Secure Enterprise Portal
 
 ### Security Implementation Proposal for the African Development Bank
