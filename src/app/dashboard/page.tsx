@@ -5,22 +5,150 @@ import { useRouter } from 'next/navigation';
 import { authUtils } from '@/lib/auth';
 import { User } from '@/types';
 import AuthenticatedLayout from '@/components/layout/AuthenticatedLayout';
+import { useWeather } from '@/hooks/useWeather';
+import PageLoader from '@/components/ui/PageLoader';
 import {
   FolderKanban,
   DollarSign,
   Globe2,
   Users,
-  TrendingUp,
-  TrendingDown,
   Activity,
   CheckCircle2,
-  Clock,
   AlertTriangle,
+  FileText,
+  BarChart3,
+  Settings,
+  Shield,
+  Lock,
+  Sunrise,
+  Sun,
+  Moon,
+  TrendingUp,
 } from 'lucide-react';
+import {
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from 'recharts';
+
+// Glass-style Tooltip Component (inspired by accounting_module)
+const GlassTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    const isDark = document.documentElement.classList.contains('dark');
+    
+    return (
+      <div
+        className="backdrop-blur-xl rounded-xl shadow-xl"
+        style={{
+          padding: '10px 15px',
+          backdropFilter: 'blur(12px)',
+          backgroundColor: isDark ? 'rgba(30, 30, 40, 0.7)' : 'rgba(255, 255, 255, 0.2)',
+          border: isDark ? '1px solid rgba(255, 255, 255, 0.15)' : '1px solid rgba(255, 255, 255, 0.3)',
+          boxShadow: isDark ? '0 4px 30px rgba(0, 0, 0, 0.4)' : '0 4px 30px rgba(0, 0, 0, 0.1)',
+        }}
+      >
+        {label && (
+          <p
+            className="label"
+            style={{ color: isDark ? '#f3f4f6' : '#000', fontWeight: 'bold', marginBottom: '6px', fontSize: '13px' }}
+          >{`${label}`}</p>
+        )}
+        {payload.map((entry: any, index: number) => (
+          <p
+            key={index}
+            style={{ color: isDark ? '#e5e7eb' : '#374151', margin: '4px 0', fontSize: '12px' }}
+          >
+            <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+              <span
+                className="w-2.5 h-2.5 rounded-full mr-2"
+                style={{ backgroundColor: entry.color }}
+              ></span>
+              {`${entry.name}: ${entry.value}`}
+            </span>
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
+
+// Custom Legend Component with toggle functionality
+interface CustomLegendProps {
+  payload?: Array<{ value: string; color: string }>;
+  hiddenSeries?: Set<string>;
+  onToggleSeries?: (value: string) => void;
+}
+
+const CustomLegend = ({ payload, hiddenSeries, onToggleSeries }: CustomLegendProps) => {
+  const isDark = document.documentElement.classList.contains('dark');
+  return (
+    <div className="flex justify-center flex-wrap gap-4 mt-2 mb-1">
+      {payload?.map((entry: any, index: number) => {
+        const isHidden = hiddenSeries?.has(entry.value);
+        return (
+          <div
+            key={`legend-${index}`}
+            className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => onToggleSeries?.(entry.value)}
+            style={{ opacity: isHidden ? 0.4 : 1 }}
+          >
+            <div
+              className="w-2.5 h-2.5 rounded-full"
+              style={{ backgroundColor: entry.color }}
+            />
+            <span
+              className="text-xs font-medium"
+              style={{ color: isDark ? '#9ca3af' : '#6b7280', textDecoration: isHidden ? 'line-through' : 'none' }}
+            >
+              {entry.value}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
 export default function DashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [hiddenAreaSeries, setHiddenAreaSeries] = useState<Set<string>>(new Set());
+  const [hiddenBarSeries, setHiddenBarSeries] = useState<Set<string>>(new Set());
+  const { data: weatherData, isLoading: weatherLoading, isError: weatherError } = useWeather();
+
+  // Toggle series visibility for Area Chart
+  const toggleAreaSeries = (value: string) => {
+    const newHidden = new Set(hiddenAreaSeries);
+    if (newHidden.has(value)) {
+      newHidden.delete(value);
+    } else {
+      newHidden.add(value);
+    }
+    setHiddenAreaSeries(newHidden);
+  };
+
+  // Toggle series visibility for Bar Chart
+  const toggleBarSeries = (value: string) => {
+    const newHidden = new Set(hiddenBarSeries);
+    if (newHidden.has(value)) {
+      newHidden.delete(value);
+    } else {
+      newHidden.add(value);
+    }
+    setHiddenBarSeries(newHidden);
+  };
 
   useEffect(() => {
     if (!authUtils.isAuthenticated()) {
@@ -30,13 +158,61 @@ export default function DashboardPage() {
     setUser(authUtils.getUser());
   }, [router]);
 
-  if (!user) return null;
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (!user) return <PageLoader />;
+
+  const userInitials = user.firstName?.[0] && user.lastName?.[0]
+    ? `${user.firstName[0]}${user.lastName[0]}`
+    : 'U';
+
+  // Greeting based on time of day
+  const getGreeting = () => {
+    const hour = currentTime.getHours();
+    if (hour < 6) {
+      return { greeting: 'Good Morning', Icon: Sunrise, color: '#FFD700' };
+    } else if (hour < 12) {
+      return { greeting: 'Good Morning', Icon: Sun, color: '#FFD700' };
+    } else if (hour < 18) {
+      return { greeting: 'Good Afternoon', Icon: Sun, color: '#FFD700' };
+    } else {
+      return { greeting: 'Good Evening', Icon: Moon, color: '#FFD700' };
+    }
+  };
+
+  const { greeting, Icon: GreetingIcon } = getGreeting();
+
+  // Time formatting
+  const hours = currentTime.getHours();
+  const minutes = currentTime.getMinutes();
+  const displayHours = hours % 12 || 12;
+  const period = hours >= 12 ? 'PM' : 'AM';
+  const shortDate = currentTime.toLocaleDateString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
 
   const stats = [
-    { label: 'Active Projects', value: '24', change: '+3', up: true, icon: FolderKanban, color: 'text-primary bg-primary/10' },
-    { label: 'Total Budget', value: '$1.2B', change: '+12%', up: true, icon: DollarSign, color: 'text-amber-600 bg-amber-50 dark:text-amber-400 dark:bg-amber-950/30' },
-    { label: 'Countries', value: '18', change: '+2', up: true, icon: Globe2, color: 'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-950/30' },
-    { label: 'Team Members', value: '156', change: '+8', up: true, icon: Users, color: 'text-purple-600 bg-purple-50 dark:text-purple-400 dark:bg-purple-950/30' },
+    { title: 'Active Projects', value: '24', subtitle: 'Across 18 countries', icon: FolderKanban, color: 'green' },
+    { title: 'Total Budget', value: '$1.2B', subtitle: '+12% from last quarter', icon: DollarSign, color: 'blue' },
+    { title: 'Team Members', value: '156', subtitle: '8 new this month', icon: Users, color: 'purple' },
+    { title: 'Countries', value: '42', subtitle: '3 new regions', icon: Globe2, color: 'amber' },
+  ];
+
+  const quickAccessModules = [
+    { name: 'Projects', icon: FolderKanban, href: '/projects', active: true },
+    { name: 'Reports', icon: FileText, href: '/reports', active: true },
+    { name: 'Analytics', icon: BarChart3, href: '/analytics', active: true },
+    { name: 'Team', icon: Users, href: '/team', active: true },
+    { name: 'Settings', icon: Settings, href: '/settings', active: true },
+    { name: 'API Docs', icon: Shield, href: 'http://localhost:4000/api-docs', active: false, external: true },
   ];
 
   const recentActivity = [
@@ -54,118 +230,352 @@ export default function DashboardPage() {
     { name: 'FileNet Integration', status: 'Maintenance', healthy: false },
   ];
 
-  return (
-    <AuthenticatedLayout
-      pageTitle="Dashboard"
-      breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'Dashboard' }]}
-    >
-      {/* Welcome */}
-      <div className="mb-6">
-        <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Afacad, sans-serif' }}>
-          Welcome back, <span className="font-semibold text-foreground">{user.firstName}</span>. Here is your portal overview.
-        </p>
-      </div>
+  // Chart data
+  const budgetTrendData = [
+    { month: 'Jan', disbursement: 65, allocation: 80 },
+    { month: 'Feb', disbursement: 72, allocation: 85 },
+    { month: 'Mar', disbursement: 58, allocation: 78 },
+    { month: 'Apr', disbursement: 90, allocation: 95 },
+    { month: 'May', disbursement: 85, allocation: 92 },
+    { month: 'Jun', disbursement: 95, allocation: 100 },
+    { month: 'Jul', disbursement: 88, allocation: 96 },
+    { month: 'Aug', disbursement: 92, allocation: 98 },
+  ];
 
-      {/* Stats cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {stats.map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <div
-              key={stat.label}
-              className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${stat.color}`}>
-                  <Icon className="w-5 h-5" />
+  const sectorData = [
+    { name: 'Infrastructure', value: 35, color: '#10b981' },
+    { name: 'Transport', value: 25, color: '#3b82f6' },
+    { name: 'Energy', value: 20, color: '#8b5cf6' },
+    { name: 'Digital', value: 12, color: '#f59e0b' },
+    { name: 'Agriculture', value: 8, color: '#ef4444' },
+  ];
+
+  const projectPipeline = [
+    { name: 'Q1', projects: 8, budget: 120 },
+    { name: 'Q2', projects: 12, budget: 180 },
+    { name: 'Q3', projects: 15, budget: 250 },
+    { name: 'Q4', projects: 10, budget: 200 },
+  ];
+
+  const StatCard = ({ title, value, subtitle, color, icon: Icon }: { title: string; value: string; subtitle: string; color: string; icon: React.ElementType }) => {
+    const gradients: Record<string, string> = {
+      green: 'bg-gradient-to-br from-emerald-500 to-emerald-600 dark:from-emerald-600 dark:to-emerald-700',
+      blue: 'bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700',
+      purple: 'bg-gradient-to-br from-violet-500 to-violet-600 dark:from-violet-600 dark:to-violet-700',
+      amber: 'bg-gradient-to-br from-amber-500 to-amber-600 dark:from-amber-600 dark:to-amber-700',
+    };
+    return (
+      <div className={`relative overflow-hidden ${gradients[color]} text-white rounded-xl border-0 shadow-sm hover:shadow-lg transition-shadow`}>
+        <div className="p-5">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-medium text-white/90">{title}</span>
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/20">
+              <Icon className="h-5 w-5 text-white" />
+            </div>
+          </div>
+          <div className="text-3xl font-bold text-white">{value}</div>
+          <p className="text-xs text-white/80 mt-1">{subtitle}</p>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <AuthenticatedLayout>
+      <div className="space-y-6">
+        {/* Welcome Banner + Stats Section */}
+        <div className="flex flex-col lg:flex-row gap-4 rounded-xl">
+          {/* Welcome Banner - Left Side */}
+          <div className="flex flex-col justify-between p-6 rounded-xl text-white w-full lg:w-[40%] relative overflow-hidden min-h-[240px]">
+            {/* Dark radial gradient background */}
+            <div className="absolute inset-0 bg-[radial-gradient(120%_100%_at_65%_60%,_rgb(18,48,32)_0%,_black_50%)]"></div>
+            <div className="relative z-10">
+              {/* Top row: Greeting icon + Weather */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white dark:bg-[rgb(45_52_57)]">
+                  <GreetingIcon className="w-6 h-6" style={{ color: '#FFD700' }} />
                 </div>
-                <div className={`flex items-center gap-1 text-xs font-medium ${stat.up ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                  {stat.up ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                  {stat.change}
+                {/* Weather Display */}
+                <div className="flex flex-col items-end">
+                  {weatherLoading ? (
+                    <>
+                      <div className="flex items-center text-emerald-500">
+                        <div className="text-2xl font-light text-white">--°C</div>
+                      </div>
+                      <div className="text-sm text-emerald-500 mt-1">
+                        <div className="font-light">Loading...</div>
+                      </div>
+                    </>
+                  ) : weatherError || !weatherData ? (
+                    <>
+                      <div className="flex items-center text-emerald-500">
+                        <div className="text-2xl font-light text-white">N/A</div>
+                      </div>
+                      <div className="text-sm text-emerald-500 mt-1">
+                        <div className="font-light">Weather unavailable</div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex items-center text-emerald-500">
+                        <img
+                          alt={weatherData.current.condition.text}
+                          loading="lazy"
+                          width="32"
+                          height="32"
+                          decoding="async"
+                          className="w-8 h-8"
+                          src={`https:${weatherData.current.condition.icon}`}
+                          style={{ color: 'transparent' }}
+                        />
+                        <div className="text-2xl font-light text-white">
+                          {Math.round(weatherData.current.temp_c)}°C
+                        </div>
+                      </div>
+                      <div className="text-sm text-emerald-500 mt-1">
+                        <div className="font-light">
+                          {weatherData.location.name}, {weatherData.current.condition.text}
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
-              <p className="text-2xl font-bold text-foreground" style={{ fontFamily: 'Afacad, sans-serif' }}>
-                {stat.value}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1" style={{ fontFamily: 'Afacad, sans-serif' }}>
-                {stat.label}
-              </p>
-            </div>
-          );
-        })}
-      </div>
 
-      {/* Content grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Activity */}
-        <div className="lg:col-span-2">
-          <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2" style={{ fontFamily: 'Afacad, sans-serif' }}>
-            <Activity className="w-4 h-4 text-primary" />
-            Recent Activity
-          </h3>
-          <div className="space-y-1">
-            {recentActivity.map((item, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between py-3 px-3 rounded-lg hover:bg-accent/50 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                    item.status === 'active' ? 'bg-primary' :
-                    item.status === 'completed' ? 'bg-gray-300 dark:bg-gray-600' :
-                    'bg-amber-500'
-                  }`} />
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{item.action}</p>
-                    <p className="text-xs text-muted-foreground">{item.project}</p>
+              {/* Middle: Hi + Time */}
+              <div className="flex justify-between items-start mt-4">
+                <div>
+                  <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+                    Hi {user.firstName},
+                    <br />
+                    <span className="text-emerald-300">{greeting}!</span>
+                  </h1>
+                </div>
+                {/* Time Display */}
+                <div className="flex flex-col items-end" style={{ marginTop: '-1rem' }}>
+                  <div className="flex items-baseline gap-0">
+                    <div dir="ltr" className="text-3xl sm:text-4xl font-bold text-emerald-300 tracking-tight flex items-baseline mt-2">
+                      <span className="tabular-nums">{displayHours}</span>
+                      <span>:</span>
+                      <span className="tabular-nums">{String(minutes).padStart(2, '0')}</span>
+                    </div>
+                    <span className="text-lg sm:text-xl ml-1 font-semibold text-emerald-500 uppercase">
+                      {period}
+                    </span>
+                  </div>
+                  <div className="capitalize text-sm sm:text-base text-emerald-300">
+                    {shortDate}
                   </div>
                 </div>
-                <span className="text-xs text-muted-foreground flex-shrink-0">{item.time}</span>
               </div>
+
+              {/* Bottom: Dashboard Overview */}
+              <div className="mt-6">
+                <h2 className="text-2xl font-bold mb-0">Dashboard Overview</h2>
+                <p className="text-gray-200 mb-6">
+                  Stay updated with key organisation metrics and activities!
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Stats Cards - Right Side (2x2 Grid) */}
+          <div className="grid grid-cols-2 gap-3 w-full lg:w-[60%]">
+            {stats.map((stat) => (
+              <StatCard key={stat.title} {...stat} />
             ))}
           </div>
         </div>
 
-        {/* System Status */}
+        {/* Analytics Charts */}
         <div>
-          <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2" style={{ fontFamily: 'Afacad, sans-serif' }}>
-            <CheckCircle2 className="w-4 h-4 text-primary" />
-            System Status
-          </h3>
-          <div className="space-y-3">
-            {systemStatus.map((item) => (
-              <div
-                key={item.name}
-                className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-gray-50 dark:bg-gray-700/50"
-              >
-                <span className="text-sm text-foreground">{item.name}</span>
-                <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${
-                  item.healthy
-                    ? 'bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400'
-                    : 'bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400'
-                }`}>
-                  {item.healthy ? (
-                    <CheckCircle2 className="w-3 h-3" />
-                  ) : (
-                    <AlertTriangle className="w-3 h-3" />
-                  )}
-                  {item.status}
-                </span>
-              </div>
-            ))}
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white" style={{ fontFamily: 'Afacad, sans-serif' }}>
+                Analytics Overview
+              </h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Budget trends, sector allocation, and project pipeline
+              </p>
+            </div>
           </div>
 
-          {/* Quick info card */}
-          <div className="mt-6 p-4 rounded-xl bg-primary/5 dark:bg-primary/10 border border-primary/20">
-            <div className="flex items-center gap-2 mb-2">
-              <Clock className="w-4 h-4 text-primary" />
-              <span className="text-sm font-semibold text-foreground" style={{ fontFamily: 'Afacad, sans-serif' }}>
-                Session Info
-              </span>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Area Chart - Budget Trend */}
+            <div className="lg:col-span-2 bg-white dark:bg-[rgb(15,15,15)] rounded-xl border border-gray-100 dark:border-[rgb(30,30,30)] shadow-sm hover:shadow-md transition-shadow p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+                  <TrendingUp className="h-4 w-4" />
+                </div>
+                <h3 className="text-base font-semibold text-foreground" style={{ fontFamily: 'Afacad, sans-serif' }}>
+                  Budget Disbursement Trend ($M)
+                </h3>
+              </div>
+              <ResponsiveContainer width="100%" height={240}>
+                <AreaChart data={budgetTrendData} margin={{ top: 5, right: 20, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="disbursementGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#10b981" stopOpacity={0.6} />
+                      <stop offset="100%" stopColor="#10b981" stopOpacity={0.1} />
+                    </linearGradient>
+                    <linearGradient id="allocationGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.6} />
+                      <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.1} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" className="dark:stroke-gray-700" />
+                  <XAxis dataKey="month" tick={{ fill: '#9ca3af', fontSize: 12 }} tickLine={false} />
+                  <YAxis tick={{ fill: '#9ca3af', fontSize: 12 }} tickLine={false} />
+                  <Tooltip content={<GlassTooltip />} cursor={{ fill: 'transparent' }} />
+                  <Legend content={<CustomLegend hiddenSeries={hiddenAreaSeries} onToggleSeries={toggleAreaSeries} />} />
+                  {!hiddenAreaSeries.has('Allocation') && (
+                    <Area type="monotone" dataKey="allocation" stroke="#3b82f6" fill="url(#allocationGradient)" strokeWidth={2} name="Allocation" />
+                  )}
+                  {!hiddenAreaSeries.has('Disbursement') && (
+                    <Area type="monotone" dataKey="disbursement" stroke="#10b981" fill="url(#disbursementGradient)" strokeWidth={2} name="Disbursement" />
+                  )}
+                </AreaChart>
+              </ResponsiveContainer>
             </div>
-            <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Afacad, sans-serif' }}>
-              Your session is secured with MFA. Last login: Today at {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </p>
+
+            {/* Pie Chart - Sector Allocation */}
+            <div className="bg-white dark:bg-[rgb(15,15,15)] rounded-xl border border-gray-100 dark:border-[rgb(30,30,30)] shadow-sm hover:shadow-md transition-shadow p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-violet-600 text-white">
+                  <Globe2 className="h-4 w-4" />
+                </div>
+                <h3 className="text-base font-semibold text-foreground" style={{ fontFamily: 'Afacad, sans-serif' }}>
+                  Sector Allocation
+                </h3>
+              </div>
+              <ResponsiveContainer width="100%" height={160}>
+                <PieChart>
+                  <Pie data={sectorData} cx="50%" cy="50%" innerRadius={40} outerRadius={65} dataKey="value" paddingAngle={2}>
+                    {sectorData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<GlassTooltip />} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="space-y-1.5 mt-2">
+                {sectorData.map((item) => (
+                  <div key={item.name} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+                      <span className="text-xs text-gray-600 dark:text-gray-400">{item.name}</span>
+                    </div>
+                    <span className="text-xs font-medium text-gray-900 dark:text-white">{item.value}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Bar Chart - Project Pipeline */}
+          <div className="bg-white dark:bg-[rgb(15,15,15)] rounded-xl border border-gray-100 dark:border-[rgb(30,30,30)] shadow-sm hover:shadow-md transition-shadow p-5 mt-4">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-white">
+                <BarChart3 className="h-4 w-4" />
+              </div>
+              <h3 className="text-base font-semibold text-foreground" style={{ fontFamily: 'Afacad, sans-serif' }}>
+                Quarterly Project Pipeline
+              </h3>
+            </div>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={projectPipeline} margin={{ top: 5, right: 20, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} className="dark:stroke-gray-700" />
+                <XAxis dataKey="name" tick={{ fill: '#9ca3af', fontSize: 12 }} tickLine={false} />
+                <YAxis yAxisId="left" tick={{ fill: '#9ca3af', fontSize: 12 }} tickLine={false} />
+                <YAxis yAxisId="right" orientation="right" tick={{ fill: '#9ca3af', fontSize: 12 }} tickLine={false} />
+                <Tooltip content={<GlassTooltip />} cursor={{ fill: 'transparent' }} />
+                <Legend content={<CustomLegend hiddenSeries={hiddenBarSeries} onToggleSeries={toggleBarSeries} />} />
+                {!hiddenBarSeries.has('Projects') && (
+                  <Bar yAxisId="left" dataKey="projects" fill="#10b981" radius={[4, 4, 0, 0]} name="Projects" />
+                )}
+                {!hiddenBarSeries.has('Budget ($M)') && (
+                  <Bar yAxisId="right" dataKey="budget" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Budget ($M)" />
+                )}
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Recent Activity */}
+          <div className="lg:col-span-2">
+            <div className="bg-white dark:bg-[rgb(15,15,15)] rounded-xl border border-gray-100 dark:border-[rgb(30,30,30)] shadow-sm hover:shadow-md transition-shadow">
+              <div className="p-5 border-b border-gray-100 dark:border-[rgb(30,30,30)]">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2" style={{ fontFamily: 'Afacad, sans-serif' }}>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+                    <Activity className="h-4 w-4" />
+                  </div>
+                  Recent Activity
+                </h3>
+              </div>
+              <div className="p-5">
+                <div className="space-y-1">
+                  {recentActivity.map((item, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center justify-between py-3 px-3 rounded-lg hover:bg-gray-50 dark:hover:bg-[rgb(25,25,25)] transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                          item.status === 'active' ? 'bg-emerald-500' :
+                          item.status === 'completed' ? 'bg-gray-300 dark:bg-[rgb(40,40,40)]' :
+                          'bg-amber-500'
+                        }`} />
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{item.action}</p>
+                          <p className="text-xs text-muted-foreground">{item.project}</p>
+                        </div>
+                      </div>
+                      <span className="text-xs text-muted-foreground flex-shrink-0">{item.time}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* System Status */}
+          <div>
+            <div className="bg-white dark:bg-[rgb(15,15,15)] rounded-xl border border-gray-100 dark:border-[rgb(30,30,30)] shadow-sm hover:shadow-md transition-shadow">
+              <div className="p-5 border-b border-gray-100 dark:border-[rgb(30,30,30)]">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2" style={{ fontFamily: 'Afacad, sans-serif' }}>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-slate-500 to-slate-600 text-white">
+                    <Shield className="h-4 w-4" />
+                  </div>
+                  System Status
+                </h3>
+              </div>
+              <div className="p-5">
+                <div className="space-y-3">
+                  {systemStatus.map((item) => (
+                    <div
+                      key={item.name}
+                      className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-gray-50 dark:bg-[rgb(20,20,20)]"
+                    >
+                      <span className="text-sm text-foreground">{item.name}</span>
+                      <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${
+                        item.healthy
+                          ? 'bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400'
+                          : 'bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400'
+                      }`}>
+                        {item.healthy ? (
+                          <CheckCircle2 className="w-3 h-3" />
+                        ) : (
+                          <AlertTriangle className="w-3 h-3" />
+                        )}
+                        {item.status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
