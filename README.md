@@ -1,61 +1,81 @@
 <div align="center">
 
-# Secure Enterprise Portal
+# AfDB Beta Frontend — Auth Portal
 
-### Security Implementation Proposal for the African Development Bank
+### Live Reference Application — Consultancy Proposal Support
 
 <br/>
 
-<a href="https://afdb-consultant.github.io/afdb_beta_frontend/">
-  <img src="https://img.shields.io/badge/View_Full_Documentation-006837?style=for-the-badge&logo=bookstack&logoColor=white" alt="View Documentation" />
-</a>
-
-<br/><br/>
-
 | | |
 |---|---|
-| **Version** | 1.1 |
-| **Date** | August 2026 |
-| **Prepared By** | [Eng. Depute N.Alphonse, PMP®](https://www.linkedin.com/in/deputenalphonse/) |
-| **Classification** | Confidential |
-| **Status** | Implemented & Verified |
+| **Prepared By** | [Eng. Depute N.Alphonse, PMP®](https://atradezone.ca/deputenalphonse) |
+| **Role** | Senior Web Frontend Developer Consultant (TCIS) |
+| **Live Demo** | [afdb-beta.atradezone.ca](https://afdb-beta.atradezone.ca) |
+| **Documentation** | [Technical Docs](https://afdb-beta.atradezone.ca/docs) · [User Manual](https://afdb-beta.atradezone.ca/docs/user-manual.html) |
+| **GitHub Org** | [github.com/AfDB-Consultant](https://github.com/AfDB-Consultant) |
+
+<br/>
+
+<a href="https://afdb-beta.atradezone.ca">
+  <img src="https://img.shields.io/badge/Live_Demo-afdb--beta.atradezone.ca-006837?style=for-the-badge&logo=vercel&logoColor=white" alt="Live Demo" />
+</a>
+
+<a href="https://afdb-beta.atradezone.ca/docs/user-manual.html">
+  <img src="https://img.shields.io/badge/User_Manual-Read_Online-006837?style=for-the-badge&logo=bookstack&logoColor=white" alt="User Manual" />
+</a>
 
 </div>
 
 ---
 
-## Overview
+## About This Application
 
-The AfDB Secure Enterprise Portal is a modern, security-first web application designed to manage project data, reporting, and operational workflows for the African Development Bank. This repository contains the implementation of **critical security pillars** — fully functional with verified results, including email OTP verification on all authentication flows.
+> Words on a page can say a lot. Code says more.
 
-## Security Pillars
+This is a **live reference application** — deployed, accessible, and open-source — built to demonstrate the exact patterns described in the consultancy proposal for **Senior Web Frontend Developer Consultant (TCIS)** at the African Development Bank.
 
-| Pillar | Description | Status |
-|--------|-------------|--------|
-| **Email OTP Verification** | 6-digit codes for login, registration, and password reset with 10-min expiry countdown | Implemented & Verified |
-| **MFA-Protected Access** | TOTP authenticator apps, backup recovery codes, account lockout protection | Implemented & Verified |
-| **SSO-IDP Federation** | OAuth2/OIDC with Google Workspace and Microsoft Azure AD, auto-provisioning | Implemented & Verified |
-| **OWASP Top 10 Compliance** | Full coverage of A01–A09 with hardened middleware stack | Implemented & Verified |
+The system currently comprises **172+ source files** across **4 public repositories** in the [AfDB-Consultant](https://github.com/AfDB-Consultant) GitHub organisation, with all 6 Docker services running and continuously deployed via GitHub Actions.
+
+### What This Repo Does
+
+This is the **Beta Tier Frontend** — the front door of the system. This is where Bank users land. It handles:
+
+- MFA authentication flows with email OTP verification
+- OWASP-hardened login, registration, and password reset
+- Session management and role-based routing
+- Navigation to the Core dashboard for data operations
 
 ## Architecture
 
+![High-Level Architecture](images/high_level_architecture.png)
+
+The reference app is a **two-tier enterprise system**:
+
+| Tier | Role | Repos |
+|------|------|-------|
+| **Beta Tier** — The Front Door | MFA authentication, OWASP-hardened login, session management, role-based routing | `afdb_beta_frontend` + `afdb_beta_backend` |
+| **Core Tier** — The Engine | RESTful APIs, business logic, database management, external integrations | `afdb_core_frontend` + `afdb_core_backend` |
+
 ```
-┌─────────────────────────────────────────────────────┐
-│                   CLIENT LAYER                       │
-│   Beta Frontend (:3000)    Core Frontend (:3001)     │
-└─────────────────────┬───────────────────────────────┘
-                      │
-┌─────────────────────▼───────────────────────────────┐
-│           AUTHENTICATION GATEWAY                     │
-│   Beta Backend (:4000)                               │
-│   Auth │ OTP │ MFA │ SSO │ Email Service             │
-│   MongoDB (:27017)  │  Redis (:6379)  │  SMTP        │
-└─────────────────────┬───────────────────────────────┘
-                      │
-┌─────────────────────▼───────────────────────────────┐
-│   Core Backend (:4001)                               │
-│   Dashboard │ Projects │ Reports │ Activities        │
-└─────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│                    CLIENT LAYER                          │
+│  afdb-beta.atradezone.ca    afdb-core.atradezone.ca     │
+│  Beta Frontend (:3000)      Core Frontend (:3001)       │
+└──────────────────────┬──────────────────────────────────┘
+                       │
+┌──────────────────────▼──────────────────────────────────┐
+│           AUTHENTICATION GATEWAY                         │
+│  afdb-api.atradezone.ca                                  │
+│  Beta Backend (:4000)                                    │
+│  Auth │ OTP │ MFA │ SSO │ Email Service                 │
+│  MongoDB Atlas │ Redis │ SMTP                            │
+└──────────────────────┬──────────────────────────────────┘
+                       │
+┌──────────────────────▼──────────────────────────────────┐
+│  afdb-core-api.atradezone.ca                             │
+│  Core Backend (:4001)                                    │
+│  Dashboard │ Projects │ Reports │ Activities │ Team      │
+└──────────────────────────────────────────────────────────┘
 ```
 
 ## Technology Stack
@@ -64,32 +84,41 @@ The AfDB Secure Enterprise Portal is a modern, security-first web application de
 |-------|-----------|
 | **Frontend** | Next.js 15, React 19, TypeScript, Ant Design 5, Tailwind CSS |
 | **Backend** | Node.js, Express.js, TypeScript |
-| **Database** | MongoDB 7 (Mongoose ODM) |
+| **Database** | MongoDB Atlas (Mongoose ODM) |
 | **Cache** | Redis 7 (OTP storage, rate limiting, session cache) |
 | **Auth** | JWT (access + refresh), bcrypt, otplib (TOTP), Email OTP |
 | **Email** | Nodemailer with professional HTML templates (CID logo) |
 | **Security** | Helmet, CORS, Input Sanitizer, Rate Limiter, Security Headers |
+| **CI/CD** | GitHub Actions → Docker Hub → AWS EC2 (self-hosted runner) |
+| **Containerization** | Docker + Docker Compose + Nginx reverse proxy |
 
-## Key Security Features
+## Key Features
 
-- **Email OTP Verification** — 6-digit codes sent via email for login, registration, and password reset
-- **OTP Countdown Timer** — 10-minute expiry with color-coded states (gray → orange → red)
-- **OTP Paste Support** — Users can paste full 6-digit codes directly from email
-- **Professional Email Templates** — Branded HTML emails with AfDB logo, purpose-specific styling
-- **Multi-Factor Authentication** — TOTP-based with 10 backup codes, bcrypt-hashed storage
-- **Account Lockout** — 5 failed attempts triggers 15-minute lock
-- **OWASP Password Policy** — Min 8 chars, uppercase, lowercase, digit, special character
-- **Input Sanitization** — NoSQL injection & XSS pattern detection
-- **Security Headers** — CSP, HSTS, X-Frame-Options, Permissions-Policy, Referrer-Policy
-- **Rate Limiting** — 5 login attempts/15min, 100 API requests/min
-- **OAuth2 SSO** — Authorization Code Flow with CSRF state parameter
-- **Auto-Provisioning** — JIT user creation from SSO identity providers
+- **Email OTP Verification** — 6-digit codes for login, registration, and password reset
+- **Multi-Factor Authentication** — TOTP-based with 10 backup codes
+- **OWASP Top 10 Compliance** — Full coverage of A01–A09
+- **SSO-IDP Federation** — OAuth2/OIDC with Google and Microsoft Azure AD
+- **Role-Based Access Control** — Admin, Manager, Viewer with permission-gated UI
+- **Responsive Design** — Desktop and mobile layouts with theme switching
+- **Professional Email Templates** — Branded HTML emails with embedded logo
+- **API Documentation** — Interactive Scalar API reference
+
+## Live URLs
+
+| Service | URL |
+|---------|-----|
+| **Auth Portal (Beta Frontend)** | [https://afdb-beta.atradezone.ca](https://afdb-beta.atradezone.ca) |
+| **Enterprise Dashboard (Core Frontend)** | [https://afdb-core.atradezone.ca](https://afdb-core.atradezone.ca) |
+| **Auth API (Beta Backend)** | [https://afdb-api.atradezone.ca](https://afdb-api.atradezone.ca) |
+| **Data API (Core Backend)** | [https://afdb-core-api.atradezone.ca](https://afdb-core-api.atradezone.ca) |
+| **API Documentation** | [https://afdb-api.atradezone.ca/api-docs](https://afdb-api.atradezone.ca/api-docs) |
+| **User Manual** | [https://afdb-beta.atradezone.ca/docs/user-manual.html](https://afdb-beta.atradezone.ca/docs/user-manual.html) |
 
 ## Quick Start
 
 ```bash
 # Clone the repository
-git clone <repo-url>
+git clone https://github.com/AfDB-Consultant/afdb_beta_frontend.git
 cd afdb_beta_frontend
 
 # Install dependencies
@@ -101,92 +130,47 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000)
 
-> **Prerequisites:** MongoDB (port 27017), Redis (port 6379), Beta Backend running on port 4000, and SMTP configured.
-
-## Authentication Flow with Email OTP
-
-### Login
-1. Enter email and password at `/login`
-2. After credentials validated, a 6-digit OTP is sent to your email
-3. Enter or paste the OTP code on the verification screen
-4. Countdown timer shows remaining time (10 minutes)
-5. On successful verification, JWT tokens are issued and you're redirected to the dashboard
-
-### Registration
-1. Fill in name, email, and password at `/signup`
-2. A verification OTP is sent to your email
-3. Enter the OTP to confirm email ownership
-4. Account is created and you're auto-logged in
-
-### Password Reset
-1. Enter your email at `/forgot-password`
-2. A reset OTP is sent to your email
-3. Enter the OTP to verify your identity
-4. Set a new password
-
-### Getting the OTP (Testing with Yopmail)
-1. Login with demo credentials (e.g., `afdbadmin@yopmail.com`)
-2. Visit [https://yopmail.com](https://yopmail.com)
-3. Type the username (e.g., `afdbadmin`) in the inbox field
-4. Find the email with subject like "123456 is your AfDB Login Verification Code"
-5. Copy the 6-digit code and enter it on the verification screen
-
-## Documentation
-
-The full security implementation proposal is available as an interactive HTML document:
-
-**[View Complete Documentation →](https://afdb-consultant.github.io/afdb_beta_frontend/)**
-
-The documentation covers:
-1. Executive Summary
-2. System Architecture
-3. Technology Stack
-4. MFA Implementation Details
-5. **Email OTP Verification (NEW)** — Architecture, flows, templates, Yopmail testing guide
-6. SSO-IDP Federation Details
-7. OWASP Top 10 Compliance Matrix
-8. API Reference (20+ endpoints including OTP)
-9. Testing Scenarios & Results (48 test cases)
-10. Deployment Architecture (including SMTP configuration)
-11. Compliance Matrix
-12. Appendices (Data Models, Token Lifecycle, Security Logs, Demo Credentials)
-
-## Related Repositories
-
-| Repository | Role |
-|-----------|------|
-| `afdb_beta_backend` | Authentication Gateway — OTP, MFA, SSO, JWT, Email, OWASP security |
-| `afdb_core_frontend` | Data Portal — Dashboard, Projects, Reports |
-| `afdb_core_backend` | Data Service — Project & dashboard APIs |
+> **Prerequisites:** Beta Backend running on port 4000, MongoDB, and Redis.
 
 ## Demo Credentials
 
 All accounts work on both portals — they share the same authentication backend (Beta).
 **Login requires email OTP verification** — after entering credentials, check the user's Yopmail inbox for the 6-digit code.
 
-| Portal | URL |
-|--------|-----|
-| **Auth Portal** | [http://localhost:3000/login](http://localhost:3000/login) |
-| **Enterprise Dashboard** | [http://localhost:3001/login](http://localhost:3001/login) |
-| **API Documentation (Scalar)** | [http://localhost:4000/api-docs](http://localhost:4000/api-docs) |
+| Role | Email | Password | Yopmail Inbox |
+|------|-------|----------|---------------|
+| **Admin** | `afdbadmin@yopmail.com` | `Admin@123` | [yopmail.com/?afdbadmin](https://yopmail.com/en/?afdbadmin) |
+| **Viewer** | `afdbaviewer@yopmail.com` | `Viewer@123` | [yopmail.com/?afdbaviewer](https://yopmail.com/en/?afdbaviewer) |
+| **Manager** | `afdbmanager@yopmail.com` | `Manager@123` | [yopmail.com/?afdbmanager](https://yopmail.com/en/?afdbmanager) |
 
-| Role | Email | Password | Yopmail Inbox | Permissions |
-|------|-------|----------|---------------|-------------|
-| **Admin** | `afdbadmin@yopmail.com` | `Admin@123` | [yopmail.com/?afdbadmin](https://yopmail.com/en/?afdbadmin) | Full access — all features |
-| **Viewer** | `afdbaviewer@yopmail.com` | `Viewer@123` | [yopmail.com/?afdbaviewer](https://yopmail.com/en/?afdbaviewer) | Read-only access |
-| **Manager** | `afdbmanager@yopmail.com` | `Manager@123` | [yopmail.com/?afdbmanager](https://yopmail.com/en/?afdbmanager) | Project management |
+## Related Repositories
 
-> **Re-seeding:** If credentials stop working (e.g., after a database restart), run:
-> ```bash
-> cd afdb_beta_backend && node src/seed/users.js
-> ```
+| Repository | Role | Live URL |
+|-----------|------|----------|
+| [`afdb_beta_backend`](https://github.com/AfDB-Consultant/afdb_beta_backend) | Authentication Gateway — OTP, MFA, SSO, JWT, Email, OWASP | [afdb-api.atradezone.ca](https://afdb-api.atradezone.ca) |
+| [`afdb_core_frontend`](https://github.com/AfDB-Consultant/afdb_core_frontend) | Enterprise Dashboard — Projects, Reports, Team | [afdb-core.atradezone.ca](https://afdb-core.atradezone.ca) |
+| [`afdb_core_backend`](https://github.com/AfDB-Consultant/afdb_core_backend) | Data Engine — Project & Dashboard APIs | [afdb-core-api.atradezone.ca](https://afdb-core-api.atradezone.ca) |
+
+## Proposal Reference
+
+This application supports the consultancy proposal for:
+
+**Senior Web Frontend Developer Consultant (TCIS)**
+African Development Bank
+
+| Document | Link |
+|----------|------|
+| **Portfolio** | [atradezone.ca/deputenalphonse](https://atradezone.ca/deputenalphonse) |
+| **Curriculum Vitae** | [Canva CV](https://canva.link/wi9a7piqzdscqqg) |
+| **Technical Documentation** | [afdb-beta.atradezone.ca/docs](https://afdb-beta.atradezone.ca/docs) |
+| **User Manual** | [afdb-beta.atradezone.ca/docs/user-manual.html](https://afdb-beta.atradezone.ca/docs/user-manual.html) |
 
 ## Contact
 
 <div>
 
 **Eng. Depute N.Alphonse, PMP®**
-*Enterprise Software Architect & Digital Transformation Consultant*
+*Senior Web Frontend Developer Consultant*
 
 - **Email:** [depute@atradezone.ca](mailto:depute@atradezone.ca)
 - **Phone:** +250 782 424 845
@@ -201,8 +185,6 @@ All accounts work on both portals — they share the same authentication backend
 
 <div align="center">
 
-**Confidential** — African Development Bank Consultancy Project
-
-*© 2026 Eng. Depute N.Alphonse, PMP®. All rights reserved.*
+*© 2026 Eng. Depute N.Alphonse, PMP®. Open-source reference application.*
 
 </div>
