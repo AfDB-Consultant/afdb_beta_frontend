@@ -160,6 +160,7 @@ African Development Bank
 
 | Document | Link |
 |----------|------|
+| **Consultancy Proposal** | [PROPOSAL FOR CONSULTANCY SERVICES — Senior Web Frontend Developer Consultant (TCIS)](https://canva.link/xrt5wv0lx2rcwt5) |
 | **Portfolio** | [atradezone.ca/deputenalphonse](https://atradezone.ca/deputenalphonse) |
 | **Curriculum Vitae** | [Canva CV](https://canva.link/wi9a7piqzdscqqg) |
 | **Technical Documentation** | [afdb-beta.atradezone.ca/docs](https://afdb-beta.atradezone.ca/docs) |
