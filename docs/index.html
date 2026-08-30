@@ -8,6 +8,9 @@
 <meta http-equiv="Expires" content="0">
 <title>AfDB Secure Enterprise Portal — Security Implementation Proposal</title>
 <link href="https://fonts.googleapis.com/css2?family=Afacad:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+(function(){var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();
+</script>
 <style>
   :root {
     --afdb-green: #006837;
@@ -147,12 +150,13 @@
     color: var(--afdb-gray); margin-bottom: 16px; font-weight: 600;
     display: flex; align-items: center; gap: 6px;
   }
+  .sidebar-title:hover { background: none !important; border-color: transparent !important; box-shadow: none !important; }
   .sidebar-title svg { width: 14px; height: 14px; stroke: var(--afdb-gray); }
   .sidebar-links { flex: 1; }
   .sidebar a {
     display: flex; align-items: center; gap: 8px;
-    padding: 7px 12px; font-size: 13px; color: #374151;
-    text-decoration: none; border-radius: 8px; margin-bottom: 2px; transition: all 0.2s;
+    padding: 5px 12px; font-size: 16px; line-height: 1.2; color: #374151;
+    text-decoration: none; border-radius: 8px; margin-bottom: 1px; transition: all 0.2s;
     border: 1px solid transparent;
   }
   .sidebar a svg { width: 15px; height: 15px; flex-shrink: 0; opacity: 0.55; transition: opacity 0.15s; }
@@ -162,6 +166,12 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.02);
   }
   .sidebar a:hover svg { opacity: 0.85; }
+  .sidebar a.active {
+    background: rgba(0,104,55,0.08); color: var(--afdb-green); font-weight: 600;
+    border-color: rgba(0,104,55,0.15);
+    box-shadow: 0 2px 8px rgba(0,104,55,0.06), 0 1px 3px rgba(0,104,55,0.03);
+  }
+  .sidebar a.active svg { opacity: 1; stroke: var(--afdb-green); }
 
   /* ── Sidebar Footer ── */
   .sidebar-footer {
@@ -173,9 +183,10 @@
   }
   .sidebar-footer-logo {
     width: 28px; height: 28px; border-radius: 8px;
-    background: linear-gradient(135deg, var(--afdb-navy) 0%, #2D4470 100%);
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    overflow: hidden;
   }
+  .sidebar-footer-logo img { width: 100%; height: 100%; object-fit: contain; }
   .sidebar-footer-brand-text {
     font-size: 11px; font-weight: 600; color: var(--afdb-navy); line-height: 1.3;
   }
@@ -183,12 +194,70 @@
     font-size: 10px; font-weight: 400; color: var(--afdb-gray);
   }
   .sidebar-footer-meta {
-    display: flex; gap: 12px; font-size: 10px; color: #9CA3AF; margin-top: 6px;
+    display: flex; flex-direction: column; gap: 4px; font-size: 10px; color: #9CA3AF; margin-top: 6px;
   }
-  .sidebar-footer-meta span { display: flex; align-items: center; gap: 3px; }
+  .sidebar-footer-meta span { display: flex; align-items: center; gap: 3px; white-space: nowrap; }
   .sidebar-footer-meta svg { width: 10px; height: 10px; }
   .sidebar-footer-meta a:hover { color: #1B2A4A; }
   .sidebar-footer-meta a:hover svg { stroke: #1B2A4A; }
+
+  /* ── Sidebar Quick Actions ── */
+  .sidebar-actions {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 16px; border-top: 1px solid var(--afdb-border);
+    width: 100%;
+  }
+  .sidebar-action-btn {
+    position: relative; display: flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 10px;
+    background: var(--afdb-light); border: 1px solid var(--afdb-border);
+    color: var(--afdb-gray); text-decoration: none;
+    transition: all 0.2s ease; cursor: pointer; flex-shrink: 0;
+  }
+  .sidebar-action-btn svg { width: 16px; height: 16px; transition: all 0.2s ease; }
+  .sidebar-action-btn:hover {
+    background: rgba(0,104,55,0.08); border-color: rgba(0,104,55,0.2);
+    color: var(--afdb-green); transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,104,55,0.1);
+  }
+  .sidebar-action-btn:hover svg { stroke: var(--afdb-green); }
+  .sidebar-action-btn::after {
+    content: attr(data-tooltip);
+    position: absolute; bottom: calc(100% + 8px); left: 50%;
+    transform: translateX(-50%) scale(0.9);
+    background: var(--afdb-navy); color: #fff;
+    font-size: 10px; font-weight: 600;
+    padding: 5px 10px; border-radius: 6px; white-space: nowrap;
+    opacity: 0; pointer-events: none; transition: all 0.2s ease; z-index: 10;
+  }
+  .sidebar-action-btn::before {
+    content: '';
+    position: absolute; bottom: calc(100% + 3px); left: 50%;
+    transform: translateX(-50%) scale(0.9);
+    border: 5px solid transparent; border-top-color: var(--afdb-navy);
+    opacity: 0; pointer-events: none; transition: all 0.2s ease; z-index: 10;
+  }
+  .sidebar-action-btn:hover::after, .sidebar-action-btn:hover::before {
+    opacity: 1; transform: translateX(-50%) scale(1);
+  }
+  .sidebar-action-btn .status-dot {
+    position: absolute; top: 4px; right: 4px;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #9CA3AF; transition: background 0.3s;
+  }
+  .sidebar-action-btn .status-dot.online { background: #22C55E; }
+  .sidebar-action-btn .status-dot.offline { background: #EF4444; }
+  [data-theme="dark"] .sidebar-actions { border-top-color: var(--afdb-border); }
+  [data-theme="dark"] .sidebar-action-btn {
+    background: #13161D; border-color: var(--afdb-border); color: #9CA3AF;
+  }
+  [data-theme="dark"] .sidebar-action-btn:hover {
+    background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.2);
+    color: var(--afdb-green); box-shadow: 0 4px 12px rgba(34,197,94,0.08);
+  }
+  [data-theme="dark"] .sidebar-action-btn:hover svg { stroke: var(--afdb-green); }
+  [data-theme="dark"] .sidebar-action-btn::after { background: #2D3342; }
+  [data-theme="dark"] .sidebar-action-btn::before { border-top-color: #2D3342; }
 
   /* ── Sidebar Search ── */
   .sidebar-search { position: relative; margin: 8px 0 14px; }
@@ -239,7 +308,7 @@
     background: #FEF3C7; color: #92400E; padding: 1px 3px; border-radius: 3px;
     box-shadow: 0 0 0 2px #FEF3C7;
   }
-  .content { flex: 1; padding: 50px 60px; max-width: 960px; min-width: 0; }
+  .content { flex: 1; padding: 20px 20px; max-width: 960px; min-width: 0; }
 
   /* ── Mini TOC (right side) ── */
   .mini-toc {
@@ -402,6 +471,25 @@
   .icon-tip:hover::after { opacity: 1; transform: translateX(-50%) translateY(0); }
   .icon-tip:hover::before { opacity: 1; }
 
+  /* ── Profile Links ── */
+  .profile-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: 8px;
+    border: 1px solid var(--afdb-border); background: #fff;
+    text-decoration: none; font-size: 12px; color: var(--afdb-navy);
+    font-weight: 500; transition: all 0.15s;
+  }
+  .profile-link:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .profile-link-icon {
+    display: inline-flex; align-items: center; padding: 7px 14px;
+    border-radius: 8px; border: 1px solid var(--afdb-border); background: #fff;
+    text-decoration: none; transition: all 0.15s;
+  }
+  .profile-link-icon:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+
+  /* ── Contact Link ── */
+  .contact-link { color: #374151; text-decoration: none; font-size: 13px; }
+
   /* ── Flow Diagram ── */
   .flow-steps { display: flex; gap: 0; margin: 20px 0 30px; flex-wrap: wrap; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
   .flow-step {
@@ -465,6 +553,232 @@
     .flow-steps { flex-direction: column; }
     .flow-step { border-radius: 0 !important; }
   }
+
+  /* ── Dark Mode ── */
+  [data-theme="dark"] {
+    --afdb-green: #22C55E;
+    --afdb-gold: #E2C46E;
+    --afdb-navy: #93A8CC;
+    --afdb-light: #13161D;
+    --afdb-gray: #9CA3AF;
+    --afdb-border: #2D3342;
+    --afdb-red: #F87171;
+    --afdb-orange: #FBBF24;
+    --afdb-blue: #60A5FA;
+    --pass-green: #4ADE80;
+    --code-bg: #0D1117;
+    --code-text: #C9D1D9;
+  }
+  [data-theme="dark"] body {
+    color: #D1D5DB; background: #0B0D12;
+  }
+  /* Cover */
+  [data-theme="dark"] .cover { background: #0B0D12; }
+  [data-theme="dark"] .cover-logo img { filter: brightness(0) invert(1); }
+  [data-theme="dark"] .cover::before { background: radial-gradient(circle, rgba(34,197,94,0.06) 0%, transparent 70%); }
+  [data-theme="dark"] .cover::after { background: radial-gradient(circle, rgba(226,196,110,0.06) 0%, transparent 70%); }
+  [data-theme="dark"] .cover-badge { background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.2); color: var(--afdb-green); }
+  [data-theme="dark"] .cover h1 { background: linear-gradient(135deg, #93A8CC 0%, #60A5FA 100%); -webkit-background-clip: text; background-clip: text; }
+  [data-theme="dark"] .cover-meta-item {
+    background: rgba(19,22,29,0.8); border-color: rgba(45,51,66,0.8);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2), 0 1px 4px rgba(0,0,0,0.1);
+  }
+  [data-theme="dark"] .cover-meta-item:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.15); }
+  [data-theme="dark"] .cover-decor { border-color: rgba(34,197,94,0.06); background: rgba(34,197,94,0.02); }
+  [data-theme="dark"] .cover-decor-2 { border-color: rgba(226,196,110,0.08); background: rgba(226,196,110,0.02); }
+  [data-theme="dark"] .cover-decor-3 { border-color: rgba(147,168,204,0.06); background: rgba(147,168,204,0.01); }
+  /* Sidebar */
+  [data-theme="dark"] .sidebar { background: #0F1218; border-right-color: var(--afdb-border); }
+  [data-theme="dark"] .sidebar a { color: #D1D5DB; }
+  [data-theme="dark"] .sidebar a:hover {
+    background: rgba(30,35,48,0.7); color: #E5E7EB;
+    border-color: rgba(45,51,66,0.6); box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  [data-theme="dark"] .sidebar a.active {
+    background: rgba(34,197,94,0.1); color: var(--afdb-green);
+    border-color: rgba(34,197,94,0.2);
+    box-shadow: 0 2px 8px rgba(34,197,94,0.08);
+  }
+  [data-theme="dark"] .sidebar a.active svg { stroke: var(--afdb-green); }
+  [data-theme="dark"] .sidebar-footer { border-top-color: var(--afdb-border); }
+  [data-theme="dark"] .sidebar-footer-logo img { filter: brightness(0) invert(1); }
+  [data-theme="dark"] .sidebar-footer-brand-text { color: #D1D5DB; }
+  [data-theme="dark"] .sidebar-footer-meta a:hover { color: #E5E7EB; }
+  [data-theme="dark"] .sidebar-footer-meta a:hover svg { stroke: #E5E7EB; }
+  /* Search */
+  [data-theme="dark"] .sidebar-search input {
+    background: #13161D; border-color: var(--afdb-border); color: #D1D5DB;
+  }
+  [data-theme="dark"] .sidebar-search input:focus { border-color: var(--afdb-green); box-shadow: 0 0 0 3px rgba(34,197,94,0.12); }
+  [data-theme="dark"] .sidebar-search-clear { background: #2D3342; color: #9CA3AF; }
+  [data-theme="dark"] .sidebar-search-clear:hover { background: #3D4455; }
+  [data-theme="dark"] .search-results { background: #13161D; border-color: var(--afdb-border); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+  [data-theme="dark"] .search-result-item { color: #D1D5DB; border-bottom-color: #1E2330; }
+  [data-theme="dark"] .search-result-item:hover { background: #1A1F2A; }
+  [data-theme="dark"] .search-result-item .sr-text mark { background: #854D0E; color: #FEF3C7; }
+  [data-theme="dark"] .content mark.search-highlight { background: #854D0E; color: #FEF3C7; box-shadow: 0 0 0 2px #854D0E; }
+  /* Mini TOC */
+  [data-theme="dark"] .mini-toc { border-left-color: var(--afdb-border); }
+  [data-theme="dark"] .mini-toc-section { border-bottom-color: var(--afdb-border); }
+  [data-theme="dark"] .mini-toc a:hover {
+    background: rgba(30,35,48,0.7); border-color: rgba(45,51,66,0.6);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15); color: #D1D5DB;
+  }
+  [data-theme="dark"] .mini-toc a.active {
+    background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.2);
+    box-shadow: 0 4px 12px rgba(34,197,94,0.08);
+  }
+  /* Back to top */
+  [data-theme="dark"] .back-to-top {
+    background: rgba(19,22,29,0.9); border-color: rgba(45,51,66,0.8);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3); color: #D1D5DB;
+  }
+  [data-theme="dark"] .back-to-top:hover { background: #1A1F2A; box-shadow: 0 6px 20px rgba(0,0,0,0.4); }
+  /* Content */
+  [data-theme="dark"] h2, [data-theme="dark"] h3 { color: #D1D5DB; }
+  [data-theme="dark"] h4 { color: #D1D5DB; }
+  [data-theme="dark"] p, [data-theme="dark"] ul, [data-theme="dark"] ol { color: #9CA3AF; }
+  [data-theme="dark"] strong { color: #E5E7EB; }
+  [data-theme="dark"] hr { border-top-color: #2D3342; }
+  /* Tables */
+  [data-theme="dark"] table { box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+  [data-theme="dark"] thead th { background: #1A1F2A; }
+  [data-theme="dark"] tbody td { color: #9CA3AF; }
+  [data-theme="dark"] tbody tr:hover { background: #13161D; }
+  /* Code */
+  [data-theme="dark"] pre { border-color: rgba(45,51,66,0.6); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+  [data-theme="dark"] p code, [data-theme="dark"] li code, [data-theme="dark"] td code {
+    background: #1A1F2A; color: #93A8CC;
+  }
+  /* Callouts */
+  [data-theme="dark"] .callout-info { background: rgba(37,99,235,0.1); border-color: rgba(96,165,250,0.2); color: #93C5FD; }
+  [data-theme="dark"] .callout-warn { background: rgba(245,158,11,0.1); border-color: rgba(251,191,36,0.2); color: #FDE68A; }
+  [data-theme="dark"] .callout-success { background: rgba(34,197,94,0.1); border-color: rgba(74,222,128,0.2); color: #86EFAC; }
+  /* Pillar cards */
+  [data-theme="dark"] .pillar-card { background: #13161D; border-color: var(--afdb-border); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+  [data-theme="dark"] .pillar-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+  [data-theme="dark"] .pillar-icon { background: rgba(255,255,255,0.08) !important; }
+  [data-theme="dark"] .pillar-icon svg { stroke: #D1D5DB !important; }
+  [data-theme="dark"] .pillar-status.active { background: rgba(34,197,94,0.15); color: #4ADE80; }
+  /* Architecture diagram */
+  [data-theme="dark"] .arch-diagram { background: var(--afdb-light); border-color: var(--afdb-border); color: #9CA3AF; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+  /* Flow steps */
+  [data-theme="dark"] .flow-step { background: var(--afdb-light); border-color: var(--afdb-border); }
+  [data-theme="dark"] .flow-step strong { color: #D1D5DB; }
+  /* Middleware stack */
+  [data-theme="dark"] .mw-item { border-color: var(--afdb-border); }
+  [data-theme="dark"] .mw-num { background: #1A1F2A; }
+  [data-theme="dark"] .mw-name { color: #D1D5DB; }
+  /* Checklist */
+  [data-theme="dark"] .checklist li { border-bottom-color: #1E2330; }
+  [data-theme="dark"] .checklist li::before { border-color: #3D4455; }
+  /* Icon tooltip */
+  [data-theme="dark"] .icon-tip::after { background: #1A1F2A; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+  [data-theme="dark"] .icon-tip::before { border-top-color: #1A1F2A; }
+  /* Profile links */
+  [data-theme="dark"] .profile-link { background: #13161D; border-color: var(--afdb-border); color: #D1D5DB; }
+  [data-theme="dark"] .profile-link:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+  [data-theme="dark"] .profile-link-icon { background: #13161D; border-color: var(--afdb-border); }
+  [data-theme="dark"] .profile-link-icon:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+  /* Contact links */
+  [data-theme="dark"] .contact-link { color: #D1D5DB; }
+
+  /* ── Quick Start Section Dark Mode ── */
+  [data-theme="dark"] #quick-start {
+    background: linear-gradient(135deg, rgba(34,197,94,0.05) 0%, rgba(59,130,246,0.05) 100%) !important;
+    border-color: var(--afdb-border) !important;
+  }
+  [data-theme="dark"] #quick-start h4 { color: #D1D5DB !important; }
+  [data-theme="dark"] #quick-start p { color: #9CA3AF !important; }
+  [data-theme="dark"] #quick-start a { color: var(--afdb-green) !important; }
+  [data-theme="dark"] #quick-start td span { color: #D1D5DB !important; }
+
+  /* ── Architecture Diagram Boxes Dark Mode ── */
+  [data-theme="dark"] #s2-3 ~ div div[style*="background:#fff"],
+  [data-theme="dark"] #s2-4 ~ div div[style*="background:#fff"] {
+    background: #1A1F2A !important;
+  }
+
+  /* ── Service Communication Flow Diagram Dark Mode ── */
+  [data-theme="dark"] .middleware-stack .middleware-item[style*="DCFCE7"] {
+    background: linear-gradient(135deg, rgba(22,163,74,0.15) 0%, rgba(22,163,74,0.25) 100%) !important;
+    border-color: #22C55E !important;
+  }
+  [data-theme="dark"] .middleware-stack .middleware-item[style*="DBEAFE"] {
+    background: linear-gradient(135deg, rgba(37,99,235,0.15) 0%, rgba(37,99,235,0.25) 100%) !important;
+    border-color: #60A5FA !important;
+  }
+  [data-theme="dark"] .middleware-stack .middleware-item[style*="FEF3C7"] {
+    background: linear-gradient(135deg, rgba(245,158,11,0.15) 0%, rgba(245,158,11,0.25) 100%) !important;
+    border-color: #FBBF24 !important;
+  }
+  [data-theme="dark"] .middleware-stack .middleware-item[style*="F3E8FF"] {
+    background: linear-gradient(135deg, rgba(147,51,234,0.15) 0%, rgba(147,51,234,0.25) 100%) !important;
+    border-color: #A855F7 !important;
+  }
+  [data-theme="dark"] .middleware-stack .middleware-item strong {
+    color: #E5E7EB !important;
+  }
+  [data-theme="dark"] .middleware-stack .middleware-item span {
+    color: #9CA3AF !important;
+  }
+  [data-theme="dark"] .middleware-stack .middleware-item code {
+    background: rgba(255,255,255,0.1) !important;
+    color: #D1D5DB !important;
+  }
+
+  /* ── Section 2.3 & 2.4 Diagram Boxes ── */
+  [data-theme="dark"] .arch-diagram div[style*="background:#fff"],
+  [data-theme="dark"] section div[style*="background:#fff"] {
+    background: #1A1F2A !important;
+  }
+  [data-theme="dark"] .diagram-box,
+  [data-theme="dark"] .diagram-box-sm {
+    background: #1A1F2A !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+  }
+
+  /* ── Architecture Diagram Boxes ── */
+  .diagram-box {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .diagram-box-sm {
+    background: #fff;
+    border-radius: 12px;
+    padding: 14px 18px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  /* ── Theme Toggle Button ── */
+  .theme-toggle {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); z-index: 100;
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 20px; border-radius: 50px;
+    background: rgba(255,255,255,0.9); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(229,231,235,0.6);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.05);
+    cursor: pointer; font-family: var(--font-primary);
+    font-size: 12px; font-weight: 500; color: var(--afdb-navy);
+    transition: all 0.3s;
+    user-select: none;
+  }
+  .theme-toggle:hover {
+    box-shadow: 0 6px 24px rgba(0,0,0,0.14), 0 2px 6px rgba(0,0,0,0.06);
+    transform: translateX(-50%) translateY(-2px);
+  }
+  .theme-toggle svg { width: 18px; height: 18px; transition: transform 0.4s; }
+  .theme-toggle .icon-sun { display: none; }
+  .theme-toggle .icon-moon { display: block; }
+  [data-theme="dark"] .theme-toggle {
+    background: rgba(19,22,29,0.9); border-color: rgba(45,51,66,0.8);
+    color: #D1D5DB; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  [data-theme="dark"] .theme-toggle:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.4); transform: translateX(-50%) translateY(-2px); }
+  [data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+  [data-theme="dark"] .theme-toggle .icon-moon { display: none; }
 </style>
 </head>
 <body>
@@ -476,10 +790,10 @@
   <div class="cover-decor cover-decor-2"></div>
   <div class="cover-decor cover-decor-3"></div>
 
-  <div class="cover-logo"><img src="https://di9mr54a05a64.cloudfront.net/api-iatf.expoplatform.com/image/MTc1NTg2MTYxNjY4YTg1MjcwNjk0MjI=.png" alt="AfDB Official Logo" /></div>
+  <div class="cover-logo"><img src="https://raw.githubusercontent.com/AfDB-Consultant/afdb_beta_frontend/refs/heads/main/src/public/images/afbd-main-logo.png" alt="AfDB Official Logo" /></div>
   <div class="cover-badge">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
-    Proposal Document
+    Technical Document
   </div>
   <h1>Secure Enterprise Portal</h1>
   <h2>Companion technical document to the Proposal for Consultancy Services. <br> Senior Web Frontend Developer Consultant (TCIS). </h2>
@@ -515,30 +829,47 @@
   </div>
   <div class="sidebar-links">
     <a href="#executive-summary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> 1. Executive Summary</a>
+    <a href="#quick-start"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Quick Start</a>
     <a href="#architecture"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg> 2. System Architecture</a>
     <a href="#tech-stack"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="2" x2="9" y2="4"/><line x1="15" y1="2" x2="15" y2="4"/></svg> 3. Technology Stack</a>
     <a href="#mfa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> 4. MFA-Protected Access</a>
-    <a href="#sso"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg> 5. SSO-IDP Federation</a>
-    <a href="#owasp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> 6. OWASP Top 10</a>
-    <a href="#api"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> 7. API Reference</a>
-    <a href="#testing"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3h6v4H9z"/><path d="M7 7h10a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z"/></svg> 8. Testing &amp; Results</a>
-    <a href="#deployment"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg> 9. Deployment</a>
-    <a href="#compliance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> 10. Compliance Matrix</a>
-    <a href="#appendices"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> 11. Appendices</a>
+    <a href="#email-otp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> 5. Email OTP Verification</a>
+    <a href="#sso"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg> 6. SSO-IDP Federation</a>
+    <a href="#owasp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> 7. OWASP Top 10</a>
+    <a href="#api"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> 8. API Reference</a>
+    <a href="#testing"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3h6v4H9z"/><path d="M7 7h10a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z"/></svg> 9. Testing &amp; Results</a>
+    <a href="#deployment"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg> 10. Deployment</a>
+    <a href="#compliance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> 11. Compliance Matrix</a>
+    <a href="#appendices"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> 12. Appendices</a>
+  </div>
+  <!-- Quick Action Buttons -->
+  <div class="sidebar-actions">
+    <a href="http://localhost:4000/api-docs" target="_blank" class="sidebar-action-btn" data-tooltip="API Documentation" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    </a>
+    <a href="http://localhost:3000/login" target="_blank" class="sidebar-action-btn" data-tooltip="Auth Portal" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    </a>
+    <a href="http://localhost:3001/dashboard" target="_blank" class="sidebar-action-btn" data-tooltip="Dashboard Portal" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    </a>
+    <a href="http://localhost:4000/health" target="_blank" class="sidebar-action-btn" data-tooltip="Health Check" rel="noopener" id="healthBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      <span class="status-dot" id="healthDot"></span>
+    </a>
   </div>
   <div class="sidebar-footer">
     <div class="sidebar-footer-brand">
       <div class="sidebar-footer-logo">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+        <img src="https://raw.githubusercontent.com/AfDB-Consultant/afdb_beta_frontend/refs/heads/main/src/public/images/afbd-main-logo.png" alt="AfDB Logo" />
       </div>
       <div>
         <div class="sidebar-footer-brand-text">AfDB Secure Portal</div>
-        <div class="sidebar-footer-brand-sub">Security Proposal v1.0</div>
+        <div class="sidebar-footer-brand-sub">Security Proposal v1.1</div>
       </div>
     </div>
     <div class="sidebar-footer-meta">
-      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> <a href="https://atradezone.ca/deputenalphonse" target="_blank" rel="noopener" style="color:inherit; text-decoration:none; background:none;">Eng. Depute N.Alphonse</a></span>
-      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Aug 2026</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> <a href="https://atradezone.ca/deputenalphonse" target="_blank" rel="noopener" style="color:inherit; text-decoration:none; background:none;">Eng. Depute N.Alphonse, PMP&reg;</a></span>
     </div>
   </div>
 </nav>
@@ -550,8 +881,8 @@
 <section class="section" id="executive-summary">
   <div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> Section 1</div>
   <h2>Executive Summary</h2>
-  <p style="font-size:14px; color:#6B7280; line-height:1.7; max-width:720px; margin-bottom:24px;">This document is a companion technical proposal to the <strong>Proposal for Consultancy Services — Senior Web Frontend Developer Consultant (TCIS)</strong>. It details the end-to-end security architecture implemented for the AfDB enterprise portal: MFA-protected authentication flows, SSO-IDP federation with Google Workspace and Azure AD, OWASP Top 10 hardened frontend middleware, and a fully documented API layer — demonstrating the secure, production-ready web applications that the consultancy engagement will deliver.</p>
-  <p>The AfDB Secure Enterprise Portal is a modern, security-first web application designed to manage project data, reporting, and operational workflows for the African Development Bank. This proposal details the implementation of <strong>three critical security pillars</strong> that protect the platform and its users — demonstrating a fully functional proof-of-concept with verified results.</p>
+  <p style="font-size:14px; color:#6B7280; line-height:1.7; margin-bottom:24px; text-align:justify;">This document is a companion technical proposal to the <strong>Proposal for Consultancy Services — Senior Web Frontend Developer Consultant (TCIS)</strong>. It details the end-to-end security architecture implemented for the AfDB enterprise portal: MFA-protected authentication flows, SSO-IDP federation with Google Workspace and Azure AD, OWASP Top 10 hardened frontend middleware, and a fully documented API layer — demonstrating the secure, production-ready web applications that the consultancy engagement will deliver.</p>
+  <p style="text-align:justify;">The AfDB Secure Enterprise Portal is a modern, security-first web application designed to manage project data, reporting, and operational workflows for the African Development Bank. This proposal details the implementation of <strong>three critical security pillars</strong> that protect the platform and its users — demonstrating a fully functional proof-of-concept with verified results.</p>
 
   <div class="pillar-grid">
     <div class="pillar-card">
@@ -574,7 +905,7 @@
     </div>
   </div>
 
-  <p>The system is built as a <strong>microservices architecture</strong> with a dedicated Authentication Gateway (Beta Backend) that handles all security concerns, and a Data Service (Core Backend) that serves business logic. Both frontends authenticate exclusively through the hardened gateway.</p>
+  <p style="text-align:justify;">The system is built as a <strong>microservices architecture</strong> with a dedicated Authentication Gateway (Beta Backend) that handles all security concerns, and a Data Service (Core Backend) that serves business logic. Both frontends authenticate exclusively through the hardened gateway.</p>
 
   <div class="callout callout-success">
     <div class="callout-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Key Outcomes</div>
@@ -589,58 +920,70 @@
   </div>
 </section>
 
+<!-- ═══════════════ 1.5 QUICK START — CREDENTIALS ═══════════════ -->
+<section class="section" id="quick-start" style="background:linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%); border-radius:16px; border:1px solid #d1d5db; padding:28px 32px; margin-bottom:32px;">
+  <div class="section-label" style="color:#009A44;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Quick Start</div>
+  <h2 style="margin-bottom:8px;">Login Credentials &amp; URLs</h2>
+  <p style="font-size:14px; color:#6B7280; margin-bottom:20px;">Use these credentials to access the live demo portals. Both portals share the same authentication backend (Beta). <strong style="color:#009A44;">Login requires email OTP verification</strong> — after entering credentials, check the user's Yopmail inbox for the 6-digit code.</p>
+
+  <!-- Portal URLs -->
+  <h4 style="font-size:14px; font-weight:700; color:#1B2A4A; margin-bottom:10px;">Portal URLs</h4>
+  <table style="margin-bottom:24px;">
+    <thead><tr><th>Portal</th><th>URL</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Auth Portal</strong></td><td><a href="http://localhost:3000/login" style="color:#009A44; font-weight:600;">http://localhost:3000/login</a></td><td>Authentication gateway — login, MFA, SSO, password reset</td></tr>
+      <tr><td><strong>Enterprise Dashboard</strong></td><td><a href="http://localhost:3001/login" style="color:#009A44; font-weight:600;">http://localhost:3001/login</a></td><td>Business application — dashboard, projects, monitoring</td></tr>
+      <tr><td><strong>API Documentation</strong></td><td><a href="http://localhost:4000/api-docs" style="color:#009A44; font-weight:600;">http://localhost:4000/api-docs</a></td><td>Scalar API reference — explore all backend endpoints</td></tr>
+    </tbody>
+  </table>
+
+  <!-- Credentials -->
+  <h4 style="font-size:14px; font-weight:700; color:#1B2A4A; margin-bottom:10px;">Demo Accounts</h4>
+  <table style="margin-bottom:20px;">
+    <thead><tr><th>Role</th><th>Email</th><th>Password</th><th>Portal</th><th>Permissions</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span style="display:inline-flex; align-items:center; gap:6px; font-weight:600; color:#1B2A4A;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#009A44" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Admin</span></td>
+        <td><code>afdbadmin@yopmail.com</code></td>
+        <td><code>Admin@123</code></td>
+        <td><a href="http://localhost:3000/login" style="color:#009A44; font-weight:600;">:3000</a> · <a href="http://localhost:3001/login" style="color:#009A44; font-weight:600;">:3001</a></td>
+        <td>Full access — all features, user management, monitoring</td>
+      </tr>
+      <tr>
+        <td><span style="display:inline-flex; align-items:center; gap:6px; font-weight:600; color:#1B2A4A;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Viewer</span></td>
+        <td><code>afdbaviewer@yopmail.com</code></td>
+        <td><code>Viewer@123</code></td>
+        <td><a href="http://localhost:3000/login" style="color:#009A44; font-weight:600;">:3000</a> · <a href="http://localhost:3001/login" style="color:#009A44; font-weight:600;">:3001</a></td>
+        <td>Read-only access — view dashboards, projects, reports</td>
+      </tr>
+      <tr>
+        <td><span style="display:inline-flex; align-items:center; gap:6px; font-weight:600; color:#1B2A4A;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg> Manager</span></td>
+        <td><code>afdbmanager@yopmail.com</code></td>
+        <td><code>Manager@123</code></td>
+        <td><a href="http://localhost:3000/login" style="color:#009A44; font-weight:600;">:3000</a> · <a href="http://localhost:3001/login" style="color:#009A44; font-weight:600;">:3001</a></td>
+        <td>Project management — create, edit, approve projects (role: staff)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-info" style="margin-top:16px;">
+    <div class="callout-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Re-seeding Credentials</div>
+    If credentials stop working (e.g., after a database restart), re-run the seed script:
+    <div style="background:var(--code-bg); color:var(--code-text); padding:10px 16px; border-radius:8px; font-family:'Fira Code',monospace; font-size:12px; margin-top:8px;">
+      cd afdb_beta_backend && node src/seed/users.js
+    </div>
+  </div>
+</section>
+
 <!-- ═══════════════ 2. ARCHITECTURE ═══════════════ -->
 <section class="section" id="architecture">
   <div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg> Section 2</div>
   <h2>System Architecture</h2>
 
   <h3 id="s2-1">2.1 High-Level Architecture</h3>
-  <div class="arch-diagram">┌─────────────────────────────────────────────────────────────────────────────────┐
-│                         CLIENT LAYER  (Web Browsers)                            │
-└──────────────────────────────┬──────────────────────────────────────────────────┘
-                               │  HTTPS
-            ┌──────────────────┴──────────────────┐
-            ▼                                      ▼
-┌────────────────────┐                ┌────────────────────┐
-│  BETA FRONTEND     │                │  CORE FRONTEND     │
-│  Next.js  :3000    │                │  Next.js  :3001    │
-│  ─────────────     │                │  ──────────────    │
-│  • Login / MFA     │                │  • Dashboard       │
-│  • SSO Redirect    │                │  • Projects        │
-│  • Auth Flows      │                │  • Reports         │
-└────────┬───────────┘                └──────────┬─────────┘
-         │  REST / JSON                          │  JWT
-         ▼                                       ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    API GATEWAY  (Express.js)                 │
-│              JWT Validation  •  Rate Limiting                │
-│              CORS Handling   •  Request Routing              │
-└────────┬──────────────────────────────────┬─────────────────┘
-         │                                   │
-         ▼                                   ▼
-┌────────────────────┐                ┌────────────────────┐
-│  BETA BACKEND      │                │  CORE BACKEND      │
-│  Node.js   :4000   │                │  Node.js   :4001   │
-│  ──────────────    │                │  ──────────────    │
-│  • Auth Service    │                │  • Project Svc     │
-│  • MFA  (TOTP)    │                │  • Dashboard Svc   │
-│  • SSO  (OAuth2)  │                │  • Report Svc      │
-│  • OWASP Shield    │                │  • Data Access     │
-└────────┬───────────┘                └──────────┬─────────┘
-         │                                        │
-         ▼                                        ▼
-┌─────────────────────────────────────────────────────────────┐
-│                       DATA LAYER                             │
-│                                                              │
-│   ┌──────────────────────┐     ┌──────────────────────┐     │
-│   │   PostgreSQL  :5432  │     │     Redis  :6379     │     │
-│   │   ─────────────────  │     │     ────────────     │     │
-│   │   • Users &amp; Roles   │     │   • Session Store    │     │
-│   │   • MFA Secrets      │     │   • Rate Limit Cnt   │     │
-│   │   • Audit Logs       │     │   • Token Cache      │     │
-│   │   • App Data         │     │   • SSO State        │     │
-│   └──────────────────────┘     └──────────────────────┘     │
-└─────────────────────────────────────────────────────────────┘</div>
+  <div style="margin:20px 0 30px; text-align:center;">
+    <img src="https://raw.githubusercontent.com/AfDB-Consultant/afdb_beta_frontend/refs/heads/main/src/public/images/high_level_architecture.png" alt="AfDB Secure Portal — High-Level System Architecture" style="max-width:100%; height:auto; border:1px solid var(--afdb-border); border-radius:12px; box-shadow:0 4px 16px rgba(0,0,0,0.06);" />
+  </div>
 
   <h3 id="s2-2">2.2 Authentication Flow</h3>
   <div class="flow-steps">
@@ -654,6 +997,251 @@
   <div class="callout callout-info">
     <div class="callout-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Account Lockout Branch</div>
     If 5 consecutive failed attempts occur at Step 2, the account is locked for 15 minutes (HTTP 423). The user receives a clear warning with remaining attempt count after the 3rd failure.
+  </div>
+
+  <h3 id="s2-3">2.3 Microservices Design — Beta &amp; Core</h3>
+  <p style="margin-bottom:20px; text-align:justify;">The platform is built as <strong>two separate microservices</strong> that work together. AfDB Beta handles identity (who you are), and AfDB Core handles business operations (what you do). This separation of concerns ensures that authentication logic is isolated, independently scalable, and reusable across future services.</p>
+
+  <!-- Architecture Diagram -->
+  <div style="margin:24px 0; padding:32px 24px; background:var(--afdb-light); border-radius:16px; border:1px solid var(--afdb-border);">
+    <div style="display:flex; align-items:center; justify-content:center; gap:12px; flex-wrap:wrap; font-family:var(--font-primary);">
+      <!-- User Browser -->
+      <div style="text-align:center; min-width:180px;">
+        <div class="diagram-box" style="border:2px solid var(--afdb-navy); text-align:center;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--afdb-navy)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 6px;"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          <div style="font-weight:700; font-size:13px; color:var(--afdb-navy);">User Browser</div>
+          <div style="font-size:11px; color:var(--afdb-gray);">localhost:3000 / :3001</div>
+        </div>
+      </div>
+      <!-- Arrow -->
+      <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
+        <svg width="40" height="20" viewBox="0 0 40 20" fill="none"><path d="M0 10h32m0 0l-6-6m6 6l-6 6" stroke="var(--afdb-green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span style="font-size:9px; color:var(--afdb-gray); text-transform:uppercase; letter-spacing:1px;">HTTP</span>
+      </div>
+      <!-- Beta Backend -->
+      <div style="text-align:center; min-width:200px;">
+        <div class="diagram-box" style="border:2px solid var(--afdb-green); text-align:center;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--afdb-green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 6px;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <div style="font-weight:700; font-size:13px; color:var(--afdb-green);">Beta Backend</div>
+          <div style="font-size:11px; color:var(--afdb-gray);">Port 4000 · afdb_beta DB</div>
+          <div style="font-size:11px; color:var(--afdb-gray); margin-top:4px; font-style:italic;">"Who are you?"</div>
+        </div>
+      </div>
+      <!-- Arrow with JWT -->
+      <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
+        <svg width="50" height="20" viewBox="0 0 50 20" fill="none"><path d="M0 10h42m0 0l-6-6m6 6l-6 6" stroke="var(--afdb-gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span style="font-size:9px; color:var(--afdb-gold); text-transform:uppercase; letter-spacing:1px; font-weight:600;">JWT Token</span>
+      </div>
+      <!-- Core Backend -->
+      <div style="text-align:center; min-width:200px;">
+        <div class="diagram-box" style="border:2px solid var(--afdb-navy); text-align:center;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--afdb-navy)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 6px;"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a4 4 0 0 0-8 0v2"/><circle cx="12" cy="14" r="1"/></svg>
+          <div style="font-weight:700; font-size:13px; color:var(--afdb-navy);">Core Backend</div>
+          <div style="font-size:11px; color:var(--afdb-gray);">Port 4001 · afdb_core DB</div>
+          <div style="font-size:11px; color:var(--afdb-gray); margin-top:4px; font-style:italic;">"What do you do?"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparison Table -->
+  <h4 style="margin:28px 0 12px; font-size:15px; font-weight:700; color:var(--afdb-navy);">Service Comparison</h4>
+  <table>
+    <thead><tr><th>Concern</th><th style="color:var(--afdb-green);">Beta (port 4000)</th><th style="color:var(--afdb-navy);">Core (port 4001)</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Database</strong></td><td><code>afdb_beta</code> — users, tokens, sessions</td><td><code>afdb_core</code> — projects, activities, reports</td></tr>
+      <tr><td><strong>API Endpoints</strong></td><td><code>/auth/login</code>, <code>/auth/signup</code>, <code>/auth/verify-mfa</code>, <code>/auth/refresh</code>, <code>/auth/logout</code>, <code>/sso/*</code></td><td><code>/projects/*</code>, <code>/dashboard/*</code></td></tr>
+      <tr><td><strong>Security</strong></td><td>Helmet, rate limiting, input sanitization, security headers, OWASP compliance</td><td>Basic Helmet + CORS; trusts Beta's JWT</td></tr>
+      <tr><td><strong>SSO Providers</strong></td><td>Google OAuth2, Microsoft / Azure AD</td><td>None — validates tokens issued by Beta</td></tr>
+      <tr><td><strong>Frontend Pages</strong></td><td>Login, Signup, MFA verification, Password reset, SSO callback</td><td>Dashboard, Projects, Reports</td></tr>
+      <tr><td><strong>Role</strong></td><td>Auth Gateway — the gatekeeper</td><td>Business Engine — the application</td></tr>
+    </tbody>
+  </table>
+
+  <!-- Concrete Examples -->
+  <h4 style="margin:28px 0 16px; font-size:15px; font-weight:700; color:var(--afdb-navy);">Concrete Examples</h4>
+
+  <!-- Example 1: User Login -->
+  <div class="callout callout-success" style="margin-bottom:16px;">
+    <div class="callout-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg> Example 1 — User Login Flow</div>
+    <div style="margin-top:10px;">
+      <div class="flow-steps" style="margin:0;">
+        <div class="flow-step"><span class="step-num">Step 1</span><strong>Open Login</strong><span>User visits <code>localhost:3000/login</code></span></div>
+        <div class="flow-step"><span class="step-num">Step 2</span><strong>POST Credentials</strong><span><code>POST localhost:4000/api/v1/auth/login</code></span></div>
+        <div class="flow-step"><span class="step-num">Step 3</span><strong>Beta Responds</strong><span><code>{ "mfaRequired": true, "userId": "abc123" }</code></span></div>
+        <div class="flow-step"><span class="step-num">Step 4</span><strong>Verify MFA</strong><span><code>POST /api/v1/auth/verify-mfa</code> with TOTP code</span></div>
+        <div class="flow-step"><span class="step-num">Step 5</span><strong>JWT Issued</strong><span>Beta returns <code>accessToken</code> + <code>refreshToken</code></span></div>
+        <div class="flow-step"><span class="step-num">Step 6</span><strong>Redirect</strong><span>Frontend stores tokens, navigates to <code>/dashboard</code></span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Example 2: Accessing a Project -->
+  <div class="callout callout-info" style="margin-bottom:16px;">
+    <div class="callout-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Example 2 — Accessing a Project (Cross-Service)</div>
+    <div style="margin-top:10px;">
+      <div class="flow-steps" style="margin:0;">
+        <div class="flow-step"><span class="step-num">Step 1</span><strong>User clicks project</strong><span>At <code>localhost:3001/projects</code></span></div>
+        <div class="flow-step"><span class="step-num">Step 2</span><strong>Core Frontend calls Core Backend</strong><span><code>GET localhost:4001/api/v1/projects</code> with <code>Authorization: Bearer eyJ...</code></span></div>
+        <div class="flow-step"><span class="step-num">Step 3</span><strong>Core validates JWT</strong><span>Same secret as Beta — token verified</span></div>
+        <div class="flow-step"><span class="step-num">Step 4</span><strong>Data returned</strong><span>Projects list from <code>afdb_core</code> database</span></div>
+      </div>
+      <p style="margin-top:12px; font-size:13px; color:var(--afdb-gray);">If the JWT is missing or invalid, Core returns <code>401 Unauthorized</code> — the user must re-authenticate through Beta.</p>
+    </div>
+  </div>
+
+  <!-- Example 3: SSO -->
+  <div class="callout callout-warning" style="margin-bottom:16px;">
+    <div class="callout-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg> Example 3 — Single Sign-On (SSO)</div>
+    <div style="margin-top:10px;">
+      <div class="flow-steps" style="margin:0;">
+        <div class="flow-step"><span class="step-num">Step 1</span><strong>User clicks "Sign in with Google"</strong><span>On Beta Frontend login page</span></div>
+        <div class="flow-step"><span class="step-num">Step 2</span><strong>Redirect to Google OAuth</strong><span>Beta initiates OAuth2 flow</span></div>
+        <div class="flow-step"><span class="step-num">Step 3</span><strong>Google callback</strong><span><code>GET /api/v1/sso/callback/google?code=...</code></span></div>
+        <div class="flow-step"><span class="step-num">Step 4</span><strong>Beta creates/finds user</strong><span>Issues JWT tokens — same as regular login</span></div>
+        <div class="flow-step"><span class="step-num">Step 5</span><strong>Access granted</strong><span>User authenticated across both frontends via shared JWT</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Example 4: Token Refresh -->
+  <div class="callout" style="margin-bottom:16px; background:rgba(37,99,235,0.04); border-color:rgba(37,99,235,0.15);">
+    <div class="callout-title" style="color:var(--afdb-blue);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Example 4 — Token Refresh</div>
+    <div style="margin-top:10px;">
+      <div class="flow-steps" style="margin:0;">
+        <div class="flow-step"><span class="step-num">Step 1</span><strong>Access token expires</strong><span>After 30 minutes (configurable via <code>JWT_ACCESS_EXPIRY</code>)</span></div>
+        <div class="flow-step"><span class="step-num">Step 2</span><strong>Frontend calls Beta</strong><span><code>POST /api/v1/auth/refresh</code> with <code>refreshToken</code></span></div>
+        <div class="flow-step"><span class="step-num">Step 3</span><strong>New token issued</strong><span>Beta returns fresh <code>accessToken</code> — Core continues working seamlessly</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-info" style="margin-top:20px;">
+    <div class="callout-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Key Insight</div>
+    <p style="text-align:justify;"><strong>Beta is the gatekeeper</strong> — it issues the JWT that Core trusts. Core never handles passwords or MFA; it just validates the token Beta signed. This means authentication logic can be updated, scaled, or replaced independently without touching business logic.</p>
+  </div>
+
+  <h3 id="s2-4">2.4 Cross-Service Activity Monitoring (Diagnostic Tool)</h3>
+  <p style="margin-bottom:20px; text-align:justify;">Building on the microservices design, the platform includes a <strong>real-time activity monitoring system</strong> that turns Core into a diagnostic tool for tracking every user action performed through the Beta auth portal. Beta emits structured activity events to Core via an internal API, and Core provides a monitoring dashboard for security analysis and operational awareness.</p>
+
+  <!-- Monitoring Architecture Diagram -->
+  <div style="margin:24px 0; padding:32px 24px; background:var(--afdb-light); border-radius:16px; border:1px solid var(--afdb-border);">
+    <div style="display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap; font-family:var(--font-primary);">
+      <!-- Beta Backend -->
+      <div style="text-align:center; min-width:180px;">
+        <div class="diagram-box-sm" style="border:2px solid var(--afdb-green); text-align:center;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--afdb-green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 4px;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <div style="font-weight:700; font-size:12px; color:var(--afdb-green);">Beta Backend</div>
+          <div style="font-size:10px; color:var(--afdb-gray);">Auth events emitted</div>
+        </div>
+      </div>
+      <!-- Arrow -->
+      <div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
+        <svg width="50" height="18" viewBox="0 0 50 18" fill="none"><path d="M0 9h42m0 0l-6-6m6 6l-6 6" stroke="var(--afdb-gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span style="font-size:8px; color:var(--afdb-gold); text-transform:uppercase; letter-spacing:1px; font-weight:600;">x-api-key</span>
+      </div>
+      <!-- Core Backend -->
+      <div style="text-align:center; min-width:180px;">
+        <div class="diagram-box-sm" style="border:2px solid var(--afdb-navy); text-align:center;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--afdb-navy)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 4px;"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          <div style="font-weight:700; font-size:12px; color:var(--afdb-navy);">Core Backend</div>
+          <div style="font-size:10px; color:var(--afdb-gray);">Stored + aggregated</div>
+        </div>
+      </div>
+      <!-- Arrow -->
+      <div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
+        <svg width="50" height="18" viewBox="0 0 50 18" fill="none"><path d="M0 9h42m0 0l-6-6m6 6l-6 6" stroke="var(--afdb-blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span style="font-size:8px; color:var(--afdb-blue); text-transform:uppercase; letter-spacing:1px; font-weight:600;">JWT</span>
+      </div>
+      <!-- Monitoring Dashboard -->
+      <div style="text-align:center; min-width:180px;">
+        <div class="diagram-box-sm" style="border:2px solid var(--afdb-blue); text-align:center;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--afdb-blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 4px;"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          <div style="font-weight:700; font-size:12px; color:var(--afdb-blue);">Monitoring Dashboard</div>
+          <div style="font-size:10px; color:var(--afdb-gray);">localhost:3001/monitoring</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tracked Events Table -->
+  <h4 style="margin:24px 0 12px; font-size:15px; font-weight:700; color:var(--afdb-navy);">Tracked Auth Events</h4>
+  <table>
+    <thead><tr><th>Event</th><th>Action Key</th><th>Severity</th><th>Status</th><th>Source Controller</th></tr></thead>
+    <tbody>
+      <tr><td>Successful login</td><td><code>auth.login</code></td><td><span style="color:var(--pass-green);">info</span></td><td>success</td><td>auth.controller</td></tr>
+      <tr><td>Failed login</td><td><code>auth.login_failed</code></td><td><span style="color:var(--afdb-orange);">warning</span></td><td>failure</td><td>auth.controller</td></tr>
+      <tr><td>Account locked</td><td><code>auth.account_locked</code></td><td><span style="color:var(--afdb-red);">critical</span></td><td>failure</td><td>auth.controller</td></tr>
+      <tr><td>MFA verified</td><td><code>auth.mfa_verified</code></td><td><span style="color:var(--pass-green);">info</span></td><td>success</td><td>auth.controller</td></tr>
+      <tr><td>MFA failed</td><td><code>auth.mfa_failed</code></td><td><span style="color:var(--afdb-orange);">warning</span></td><td>failure</td><td>auth.controller</td></tr>
+      <tr><td>Account signup</td><td><code>auth.signup</code></td><td><span style="color:var(--pass-green);">info</span></td><td>success</td><td>auth.controller</td></tr>
+      <tr><td>Password changed</td><td><code>auth.password_changed</code></td><td><span style="color:var(--pass-green);">info</span></td><td>success</td><td>auth.controller</td></tr>
+      <tr><td>Token refresh</td><td><code>auth.token_refresh</code></td><td><span style="color:var(--pass-green);">info</span></td><td>success</td><td>auth.controller</td></tr>
+      <tr><td>Logout</td><td><code>auth.logout</code></td><td><span style="color:var(--pass-green);">info</span></td><td>success</td><td>auth.controller</td></tr>
+      <tr><td>SSO login</td><td><code>auth.sso_login</code></td><td><span style="color:var(--pass-green);">info</span></td><td>success</td><td>sso.controller</td></tr>
+      <tr><td>SSO callback failed</td><td><code>auth.sso_failed</code></td><td><span style="color:var(--afdb-orange);">warning</span></td><td>failure</td><td>sso.controller</td></tr>
+      <tr><td>MFA enabled</td><td><code>auth.mfa_enabled</code></td><td><span style="color:var(--pass-green);">info</span></td><td>success</td><td>mfa.controller</td></tr>
+      <tr><td>MFA disabled</td><td><code>auth.mfa_disabled</code></td><td><span style="color:var(--afdb-orange);">warning</span></td><td>success</td><td>mfa.controller</td></tr>
+      <tr><td>Backup codes regenerated</td><td><code>auth.backup_codes_regenerated</code></td><td><span style="color:var(--afdb-orange);">warning</span></td><td>success</td><td>mfa.controller</td></tr>
+    </tbody>
+  </table>
+
+  <!-- Activity Event Schema -->
+  <h4 style="margin:24px 0 12px; font-size:15px; font-weight:700; color:var(--afdb-navy);">Activity Event Schema</h4>
+  <p style="margin-bottom:12px; font-size:13px; color:var(--afdb-gray);">Each event emitted by Beta and stored in Core includes the following diagnostic fields:</p>
+  <div style="background:var(--code-bg); color:var(--code-text); padding:20px 24px; border-radius:12px; font-family:'Fira Code',monospace; font-size:12px; line-height:1.8; overflow-x:auto; margin-bottom:20px;">
+<pre style="margin:0;">{
+  <span style="color:#7dd3fc;">"action"</span>:       <span style="color:#86efac;">"auth.login"</span>,           <span style="color:#64748b;">// Event type identifier</span>
+  <span style="color:#7dd3fc;">"userId"</span>:       <span style="color:#86efac;">"66a1b2c3d4e5f6..."</span>,  <span style="color:#64748b;">// User who performed the action</span>
+  <span style="color:#7dd3fc;">"userName"</span>:     <span style="color:#86efac;">"John Doe"</span>,             <span style="color:#64748b;">// Display name</span>
+  <span style="color:#7dd3fc;">"userEmail"</span>:    <span style="color:#86efac;">"john@afdb.org"</span>,        <span style="color:#64748b;">// User email address</span>
+  <span style="color:#7dd3fc;">"severity"</span>:     <span style="color:#86efac;">"info"</span>,                 <span style="color:#64748b;">// info | warning | critical</span>
+  <span style="color:#7dd3fc;">"status"</span>:       <span style="color:#86efac;">"success"</span>,              <span style="color:#64748b;">// success | failure</span>
+  <span style="color:#7dd3fc;">"ipAddress"</span>:    <span style="color:#86efac;">"192.168.1.42"</span>,         <span style="color:#64748b;">// Client IP (from x-forwarded-for)</span>
+  <span style="color:#7dd3fc;">"userAgent"</span>:    <span style="color:#86efac;">"Mozilla/5.0..."</span>,       <span style="color:#64748b;">// Browser/device string</span>
+  <span style="color:#7dd3fc;">"source"</span>:       <span style="color:#86efac;">"beta"</span>,                 <span style="color:#64748b;">// Originating service</span>
+  <span style="color:#7dd3fc;">"details"</span>:      { <span style="color:#86efac;">"role"</span>: <span style="color:#86efac;">"admin"</span> },    <span style="color:#64748b;">// Arbitrary extra context</span>
+  <span style="color:#7dd3fc;">"createdAt"</span>:    <span style="color:#86efac;">"2026-08-29T10:30:00Z"</span>  <span style="color:#64748b;">// Timestamp (auto)</span>
+}</pre>
+  </div>
+
+  <!-- Monitoring Dashboard Features -->
+  <h4 style="margin:24px 0 12px; font-size:15px; font-weight:700; color:var(--afdb-navy);">Monitoring Dashboard Features</h4>
+  <p style="margin-bottom:16px; font-size:13px; color:var(--afdb-gray);">The Core frontend at <code>localhost:3001/monitoring</code> provides a full diagnostic interface:</p>
+  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px; margin-bottom:20px;">
+    <div style="padding:16px; background:var(--afdb-light); border-radius:12px; border:1px solid var(--afdb-border);">
+      <div style="font-weight:700; font-size:13px; color:var(--afdb-navy); margin-bottom:6px;">Summary Cards</div>
+      <p style="font-size:12px; color:var(--afdb-gray); line-height:1.5;">Total events (24h), active users, failed attempts, and critical alerts — at a glance.</p>
+    </div>
+    <div style="padding:16px; background:var(--afdb-light); border-radius:12px; border:1px solid var(--afdb-border);">
+      <div style="font-weight:700; font-size:13px; color:var(--afdb-navy); margin-bottom:6px;">Event Breakdown</div>
+      <p style="font-size:12px; color:var(--afdb-gray); line-height:1.5;">Clickable chips showing event distribution — click any action type to filter the feed.</p>
+    </div>
+    <div style="padding:16px; background:var(--afdb-light); border-radius:12px; border:1px solid var(--afdb-border);">
+      <div style="font-weight:700; font-size:13px; color:var(--afdb-navy); margin-bottom:6px;">Activity Feed</div>
+      <p style="font-size:12px; color:var(--afdb-gray); line-height:1.5;">Paginated list with severity badges, user info, IP addresses, timestamps, and event details.</p>
+    </div>
+    <div style="padding:16px; background:var(--afdb-light); border-radius:12px; border:1px solid var(--afdb-border);">
+      <div style="font-weight:700; font-size:13px; color:var(--afdb-navy); margin-bottom:6px;">Filters &amp; Drill-Down</div>
+      <p style="font-size:12px; color:var(--afdb-gray); line-height:1.5;">Filter by action type, severity, status. Click any user to see their full activity timeline.</p>
+    </div>
+  </div>
+
+  <!-- API Endpoints -->
+  <h4 style="margin:24px 0 12px; font-size:15px; font-weight:700; color:var(--afdb-navy);">Activity API Endpoints</h4>
+  <table>
+    <thead><tr><th>Method</th><th>Endpoint</th><th>Auth</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>POST</code></td><td><code>/api/v1/activities</code></td><td><code>x-api-key</code> (internal)</td><td>Beta emits events to Core</td></tr>
+      <tr><td><code>GET</code></td><td><code>/api/v1/activities</code></td><td>JWT (frontend)</td><td>Paginated activity feed with filters</td></tr>
+      <tr><td><code>GET</code></td><td><code>/api/v1/activities/stats</code></td><td>JWT (frontend)</td><td>Aggregated stats (24h/7d breakdowns)</td></tr>
+      <tr><td><code>GET</code></td><td><code>/api/v1/activities/users/:id</code></td><td>JWT (frontend)</td><td>Per-user activity timeline</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-info" style="margin-top:20px;">
+    <div class="callout-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Design Principle</div>
+    <p style="text-align:justify;">The activity emitter uses a <strong>fire-and-forget</strong> pattern — Beta sends events to Core via HTTP POST and never blocks on failures. If Core is temporarily unavailable, auth operations continue normally. Events are logged as warnings but never interrupt the user experience. This ensures the monitoring layer adds <strong>zero risk</strong> to the authentication flow.</p>
   </div>
 </section>
 
@@ -693,7 +1281,7 @@
       <tr><td>express-rate-limit</td><td>7.4.x</td><td>Brute-force protection</td></tr>
       <tr><td>QRCode</td><td>1.5.x</td><td>MFA setup QR generation</td></tr>
       <tr><td>Winston</td><td>3.14.x</td><td>Structured logging</td></tr>
-      <tr><td>Swagger</td><td>6.2.x</td><td>API documentation</td></tr>
+      <tr><td>Scalar</td><td>latest</td><td>API documentation</td></tr>
     </tbody>
   </table>
 
@@ -705,9 +1293,9 @@
       <tr><td>Core Frontend</td><td>Next.js</td><td>3001</td></tr>
       <tr><td>Beta Backend (Auth Gateway)</td><td>Express.js</td><td>4000</td></tr>
       <tr><td>Core Backend (Data Service)</td><td>Express.js</td><td>4001</td></tr>
-      <tr><td>Database</td><td>MongoDB</td><td>27018</td></tr>
+      <tr><td>Database</td><td>MongoDB</td><td>27017</td></tr>
       <tr><td>Cache</td><td>Redis</td><td>6379</td></tr>
-      <tr><td>API Documentation</td><td>Swagger UI</td><td>4000/api-docs</td></tr>
+      <tr><td>API Documentation</td><td>Scalar</td><td>4000/api-docs</td></tr>
     </tbody>
   </table>
 </section>
@@ -720,7 +1308,7 @@
   <h2>Security Implementation: MFA-Protected Access</h2>
 
   <h3 id="s4-1">4.1 Overview</h3>
-  <p>Multi-Factor Authentication (MFA) adds a critical second layer of verification beyond passwords. Users must provide both <strong>something they know</strong> (password) and <strong>something they have</strong> (authenticator app or backup code).</p>
+  <p style="text-align:justify;">Multi-Factor Authentication (MFA) adds a critical second layer of verification beyond passwords. Users must provide both <strong>something they know</strong> (password) and <strong>something they have</strong> (authenticator app or backup code).</p>
 
   <h3 id="s4-2">4.2 TOTP Implementation</h3>
   <table>
@@ -772,15 +1360,185 @@
 
 <hr>
 
-<!-- ═══════════════ 5. SSO ═══════════════ -->
-<section class="section" id="sso">
-  <div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg> Section 5</div>
-  <h2>Security Implementation: SSO-IDP Federation</h2>
+<!-- ═══════════════ 5. EMAIL OTP VERIFICATION ═══════════════ -->
+<section class="section" id="email-otp">
+  <div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> Section 5</div>
+  <h2>Email OTP Verification</h2>
 
   <h3 id="s5-1">5.1 Overview</h3>
-  <p>Single Sign-On (SSO) federation allows users to authenticate through their organization's existing identity provider without managing separate credentials. This implementation follows the <strong>OAuth 2.0 Authorization Code Flow</strong>.</p>
+  <p style="text-align:justify;">The platform implements <strong>email-based One-Time Password (OTP) verification</strong> across all authentication flows — login, registration, and password reset. Every user who logs in must verify their identity via a 6-digit code sent to their email address, providing a robust second factor that doesn't require a separate authenticator app.</p>
 
-  <h3 id="s5-2">5.2 Supported Identity Providers</h3>
+  <div class="pillar-grid">
+    <div class="pillar-card">
+      <div class="pillar-icon" style="background:#DCFCE7;color:#166534;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1"/></svg></div>
+      <h4>Login Verification</h4>
+      <p>6-digit code sent after credentials verified — required for every login attempt</p>
+    </div>
+    <div class="pillar-card">
+      <div class="pillar-icon" style="background:#DBEAFE;color:#1E40AF;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg></div>
+      <h4>Registration Verification</h4>
+      <p>Email ownership confirmed before account creation — prevents fake registrations</p>
+    </div>
+    <div class="pillar-card">
+      <div class="pillar-icon" style="background:#FEF3C7;color:#92400E;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+      <h4>Password Reset</h4>
+      <p>Secure code required before password change — protects account recovery flow</p>
+    </div>
+  </div>
+
+  <h3 id="s5-2">5.2 OTP Architecture</h3>
+  <table>
+    <thead><tr><th>Property</th><th>Detail</th></tr></thead>
+    <tbody>
+      <tr><td>Code Format</td><td>6-digit numeric code (100000–999999)</td></tr>
+      <tr><td>Storage</td><td>Redis with TTL-based auto-expiry</td></tr>
+      <tr><td>Expiry</td><td>600 seconds (10 minutes) — matches countdown timer in UI</td></tr>
+      <tr><td>Key Pattern</td><td><code>{purpose}_otp:{identifier}</code> — e.g., <code>login_otp:userId</code>, <code>register_otp:email</code>, <code>reset_otp:email</code></td></tr>
+      <tr><td>Delivery</td><td>SMTP via Nodemailer with embedded logo (CID attachment)</td></tr>
+      <tr><td>Security</td><td>Single-use (deleted from Redis after verification), rate-limited endpoints</td></tr>
+      <tr><td>Enumeration Prevention</td><td>Password reset returns success even for unregistered emails</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="s5-3">5.3 Authentication Flows with OTP</h3>
+
+  <h4 style="margin:16px 0 8px; color:var(--afdb-navy);">Login Flow (Email OTP as 2FA)</h4>
+  <div class="flow-steps">
+    <div class="flow-step"><span class="step-num">1</span><strong>Enter Credentials</strong><span>Email + password</span></div>
+    <div class="flow-step"><span class="step-num">2</span><strong>OTP Sent</strong><span>6-digit code via email</span></div>
+    <div class="flow-step"><span class="step-num">3</span><strong>Verify Code</strong><span>Enter or paste code</span></div>
+    <div class="flow-step"><span class="step-num">4</span><strong>JWT Issued</strong><span>Access + refresh tokens</span></div>
+    <div class="flow-step"><span class="step-num">5</span><strong>Dashboard</strong><span>Authenticated access</span></div>
+  </div>
+
+  <h4 style="margin:16px 0 8px; color:var(--afdb-navy);">Registration Flow (Email Verification)</h4>
+  <div class="flow-steps">
+    <div class="flow-step"><span class="step-num">1</span><strong>Fill Form</strong><span>Name, email, password</span></div>
+    <div class="flow-step"><span class="step-num">2</span><strong>OTP Sent</strong><span>Verification code emailed</span></div>
+    <div class="flow-step"><span class="step-num">3</span><strong>Verify Code</strong><span>Confirm email ownership</span></div>
+    <div class="flow-step"><span class="step-num">4</span><strong>Account Created</strong><span>User record + tokens</span></div>
+    <div class="flow-step"><span class="step-num">5</span><strong>Dashboard</strong><span>Auto-logged in</span></div>
+  </div>
+
+  <h4 style="margin:16px 0 8px; color:var(--afdb-navy);">Password Reset Flow</h4>
+  <div class="flow-steps">
+    <div class="flow-step"><span class="step-num">1</span><strong>Enter Email</strong><span>Registered email address</span></div>
+    <div class="flow-step"><span class="step-num">2</span><strong>OTP Sent</strong><span>Reset code emailed</span></div>
+    <div class="flow-step"><span class="step-num">3</span><strong>Verify Code</strong><span>Enter 6-digit code</span></div>
+    <div class="flow-step"><span class="step-num">4</span><strong>New Password</strong><span>Set new password</span></div>
+    <div class="flow-step"><span class="step-num">5</span><strong>Done</strong><span>Redirect to login</span></div>
+  </div>
+
+  <h3 id="s5-4">5.4 Professional Email Templates</h3>
+  <p style="text-align:justify;">OTP emails use <strong>professional, branded HTML templates</strong> with the AfDB logo embedded via CID (Content-ID) attachment. Each purpose has a distinct accent color and messaging:</p>
+
+  <table>
+    <thead><tr><th>Purpose</th><th>Accent Color</th><th>Subject Line Format</th><th>Icon</th></tr></thead>
+    <tbody>
+      <tr><td><strong>2FA Setup</strong></td><td style="color:#009A44;">&#9632; Green (#009A44)</td><td><code>{OTP} is your AfDB 2FA Verification Code</code></td><td><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#009A44" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg></td></tr>
+      <tr><td><strong>Login</strong></td><td style="color:#1565C0;">&#9632; Blue (#1565C0)</td><td><code>{OTP} is your AfDB Login Verification Code</code></td><td><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1565C0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></td></tr>
+      <tr><td><strong>Registration</strong></td><td style="color:#009A44;">&#9632; Green (#009A44)</td><td><code>{OTP} is your AfDB Registration Verification Code</code></td><td><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#009A44" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg></td></tr>
+      <tr><td><strong>Password Reset</strong></td><td style="color:#E65100;">&#9632; Orange (#E65100)</td><td><code>{OTP} is your AfDB Password Reset Code</code></td><td><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E65100" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="4.93" y1="4.93" x2="9.17" y2="9.17"/><line x1="14.83" y1="14.83" x2="19.07" y2="19.07"/></svg></td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-info">
+    <div class="callout-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Email Template Features</div>
+    <ul style="margin:8px 0 0 16px; font-size:13px;">
+      <li><strong>Embedded Logo</strong> — AfDB logo rendered inline via CID attachment (works in all email clients)</li>
+      <li><strong>Table-based HTML</strong> — Maximum compatibility across Outlook, Gmail, Apple Mail, and mobile clients</li>
+      <li><strong>MSO Conditionals</strong> — Special handling for Microsoft Outlook rendering</li>
+      <li><strong>Responsive Design</strong> — Media queries for mobile devices (max-width: 600px)</li>
+      <li><strong>Security Reminder</strong> — Warning to never share the verification code</li>
+      <li><strong>Branded Footer</strong> — AfDB address (Abidjan, Côte d'Ivoire), copyright notice</li>
+      <li><strong>Purpose-Specific Styling</strong> — Each email type has distinct color, icon, and messaging</li>
+    </ul>
+  </div>
+
+  <h3 id="s5-5">5.5 Frontend OTP UX</h3>
+  <p style="text-align:justify;">The OTP verification component provides a polished user experience:</p>
+  <ul class="checklist">
+    <li><strong>6 individual input fields</strong> — One per digit, auto-focus advancement</li>
+    <li><strong>Paste support</strong> — Users can paste a full 6-digit code (e.g., from email); digits are distributed across fields automatically</li>
+    <li><strong>Countdown timer</strong> — 10:00 minute countdown matching the Redis TTL, displayed below the OTP fields</li>
+    <li><strong>Color-coded expiry</strong> — Gray (normal) → Orange (≤2 min remaining) → Red (expired)</li>
+    <li><strong>Auto-disable on expiry</strong> — Verify button disabled when code expires; message prompts to resend</li>
+    <li><strong>Resend functionality</strong> — New code sent, timer resets to 10:00</li>
+    <li><strong>Auto-verify</strong> — When all 6 digits are entered, verification is submitted automatically</li>
+  </ul>
+
+  <h3 id="s5-6">5.6 Retrieving OTP During Testing (Yopmail)</h3>
+  <p style="text-align:justify;">The demo environment uses <strong>Yopmail</strong> as the email provider for testing. Yopmail is a disposable email service that allows anyone to view the inbox of any <code>@yopmail.com</code> address without a password.</p>
+
+  <div class="callout callout-success">
+    <div class="callout-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg> How to Get the OTP Code</div>
+    <ol style="margin:8px 0 0 16px; font-size:13px; line-height:1.8;">
+      <li>Attempt login at <a href="http://localhost:3000/login" style="color:var(--afdb-green); font-weight:600;">http://localhost:3000/login</a> with credentials (e.g., <code>afdbadmin@yopmail.com</code>)</li>
+      <li>After credentials are accepted, the UI will show the OTP verification screen</li>
+      <li>Open a new browser tab and go to <a href="https://yopmail.com" target="_blank" rel="noopener" style="color:var(--afdb-green); font-weight:600;">https://yopmail.com</a></li>
+      <li>Type the email username in the inbox field (e.g., <code>afdbadmin</code>) — no need to type <code>@yopmail.com</code></li>
+      <li>Click <strong>"Check Inbox"</strong> (or the arrow button)</li>
+      <li>Find the email with subject like <code>"123456 is your AfDB Login Verification Code"</code></li>
+      <li>The <strong>6-digit OTP</strong> is displayed prominently in the email body — copy or note it</li>
+      <li>Enter the code in the OTP fields on the login page (or paste all 6 digits at once)</li>
+    </ol>
+  </div>
+
+  <div class="callout callout-warning">
+    <div class="callout-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Important Notes</div>
+    <ul style="margin:8px 0 0 16px; font-size:13px;">
+      <li><strong>OTP expires in 10 minutes</strong> — if the timer reaches zero, click "Resend Code" to get a new one</li>
+      <li><strong>Yopmail inboxes are public</strong> — anyone can read emails sent to <code>@yopmail.com</code> addresses. Never use for production!</li>
+      <li><strong>Direct inbox link</strong> — You can also go directly to <code>https://yopmail.com/en/?afdbadmin</code> (replace <code>afdbadmin</code> with the username)</li>
+      <li><strong>Email may take 10–30 seconds</strong> — SMTP delivery is not instant; refresh the Yopmail inbox if the email doesn't appear immediately</li>
+    </ul>
+  </div>
+
+  <h3 id="s5-7">5.7 OTP API Endpoints</h3>
+  <table>
+    <thead><tr><th>Method</th><th>Endpoint</th><th>Auth</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>POST</td><td><code>/api/v1/auth/send-login-otp</code></td><td>No</td><td>Send login OTP (requires <code>userId</code> from login response)</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/auth/verify-login-otp</code></td><td>No</td><td>Verify login OTP and issue JWT tokens</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/auth/send-register-otp</code></td><td>No</td><td>Send registration OTP (requires <code>email</code>)</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/auth/verify-register-otp</code></td><td>No</td><td>Verify registration OTP and create account</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/auth/send-reset-otp</code></td><td>No</td><td>Send password reset OTP (requires <code>email</code>)</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/auth/verify-reset-otp</code></td><td>No</td><td>Verify reset OTP and update password</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/auth/send-otp</code></td><td>Yes</td><td>Send OTP for 2FA setup (authenticated user)</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/auth/verify-otp</code></td><td>Yes</td><td>Verify 2FA setup OTP</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="s5-8">5.8 SMTP Configuration</h3>
+  <p style="text-align:justify;">Email delivery is configured via environment variables in the Beta Backend:</p>
+  <pre>SMTP_HOST=smtp.hostinger.com
+SMTP_PORT=465
+SMTP_USER=no-reply@atradezone.ca
+SMTP_PASSWORD=&lt;smtp-password&gt;
+SMTP_FROM=no-reply@atradezone.ca</pre>
+  <table>
+    <thead><tr><th>Variable</th><th>Description</th><th>Default</th></tr></thead>
+    <tbody>
+      <tr><td><code>SMTP_HOST</code></td><td>SMTP server hostname</td><td><code>smtp.hostinger.com</code></td></tr>
+      <tr><td><code>SMTP_PORT</code></td><td>SMTP port (465 for SSL, 587 for TLS)</td><td><code>465</code></td></tr>
+      <tr><td><code>SMTP_USER</code></td><td>SMTP authentication username</td><td>—</td></tr>
+      <tr><td><code>SMTP_PASSWORD</code></td><td>SMTP authentication password</td><td>—</td></tr>
+      <tr><td><code>SMTP_FROM</code></td><td>Sender email address (From header)</td><td><code>no-reply@atradezone.ca</code></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<hr>
+
+<!-- ═══════════════ 6. SSO ═══════════════ -->
+<section class="section" id="sso">
+  <div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg> Section 6</div>
+  <h2>Security Implementation: SSO-IDP Federation</h2>
+
+  <h3 id="s6-1">6.1 Overview</h3>
+  <p style="text-align:justify;">Single Sign-On (SSO) federation allows users to authenticate through their organization's existing identity provider without managing separate credentials. This implementation follows the <strong>OAuth 2.0 Authorization Code Flow</strong>.</p>
+
+  <h3 id="s6-2">6.2 Supported Identity Providers</h3>
   <table>
     <thead><tr><th>Provider</th><th>Protocol</th><th>Authorization Endpoint</th><th>User Info Endpoint</th></tr></thead>
     <tbody>
@@ -789,7 +1547,7 @@
     </tbody>
   </table>
 
-  <h3 id="s5-3">5.3 Security Measures</h3>
+  <h3 id="s6-3">6.3 Security Measures</h3>
   <table>
     <thead><tr><th>Measure</th><th>Implementation</th></tr></thead>
     <tbody>
@@ -802,7 +1560,7 @@
     </tbody>
   </table>
 
-  <h3 id="s5-4">5.4 SSO API Endpoints</h3>
+  <h3 id="s6-4">6.4 SSO API Endpoints</h3>
   <table>
     <thead><tr><th>Method</th><th>Endpoint</th><th>Auth</th><th>Description</th></tr></thead>
     <tbody>
@@ -812,7 +1570,7 @@
     </tbody>
   </table>
 
-  <h3 id="s5-5">5.5 SSO Authentication Sequence</h3>
+  <h3 id="s6-5">6.5 SSO Authentication Sequence</h3>
   <div class="flow-steps">
     <div class="flow-step"><span class="step-num">1</span><strong>Click SSO</strong><span>User initiates</span></div>
     <div class="flow-step"><span class="step-num">2</span><strong>Get Auth URL</strong><span>Backend generates state</span></div>
@@ -825,12 +1583,12 @@
 
 <hr>
 
-<!-- ═══════════════ 6. OWASP ═══════════════ -->
+<!-- ═══════════════ 7. OWASP ═══════════════ -->
 <section class="section" id="owasp">
-  <div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Section 6</div>
+  <div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Section 7</div>
   <h2>Security Implementation: OWASP Top 10 Compliance</h2>
 
-  <h3 id="s6-1">6.1 Compliance by Category</h3>
+  <h3 id="s7-1">7.1 Compliance by Category</h3>
 
   <h4>A01: Broken Access Control</h4>
   <table>
@@ -921,8 +1679,8 @@
     </tbody>
   </table>
 
-  <h3 id="s6-2">6.2 Security Middleware Stack</h3>
-  <p>The middleware stack is ordered for defense-in-depth. Each layer processes the request before it reaches the route handler:</p>
+  <h3 id="s7-2">7.2 Security Middleware Stack</h3>
+  <p style="text-align:justify;">The middleware stack is ordered for defense-in-depth. Each layer processes the request before it reaches the route handler:</p>
   <div class="mw-stack">
     <div class="mw-item"><span class="mw-num">1</span><div><span class="mw-name">Helmet</span> <span class="mw-desc">— Security response headers (CSP, HSTS, X-Frame)</span></div></div>
     <div class="mw-item"><span class="mw-num">2</span><div><span class="mw-name">Security Headers</span> <span class="mw-desc">— Cache prevention, Permissions-Policy, X-XSS-Protection</span></div></div>
@@ -948,17 +1706,144 @@ X-XSS-Protection: 1; mode=block</pre>
 
 <hr>
 
-<!-- ═══════════════ 7. API REFERENCE ═══════════════ -->
+<!-- ═══════════════ 8. API REFERENCE ═══════════════ -->
 <section class="section" id="api">
-  <div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> Section 7</div>
+  <div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> Section 8</div>
   <h2>API Reference</h2>
 
-  <h3 id="s7-1">7.1 Authentication Endpoints</h3>
+  <h3 id="s8-0">8.1 Interactive API Documentation (Scalar)</h3>
+  <p style="text-align:justify;">The Beta Backend provides a modern, interactive API documentation powered by <strong>Scalar</strong>. This allows you to explore, test, and understand all available endpoints directly from your browser.</p>
+
+  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:16px; margin:20px 0;">
+    <div style="background:var(--afdb-light); border:1px solid var(--afdb-border); border-radius:12px; padding:20px;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--afdb-green)" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        <strong style="color:var(--afdb-navy);">Scalar API Docs</strong>
+      </div>
+      <p style="font-size:13px; color:var(--afdb-gray); margin-bottom:12px;">Interactive documentation with "Try it" functionality</p>
+      <code style="display:block; background:var(--code-bg); color:var(--code-text); padding:10px 14px; border-radius:8px; font-size:12px;">http://localhost:4000/api-docs</code>
+    </div>
+    <div style="background:var(--afdb-light); border:1px solid var(--afdb-border); border-radius:12px; padding:20px;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--afdb-blue)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <strong style="color:var(--afdb-navy);">OpenAPI JSON Spec</strong>
+      </div>
+      <p style="font-size:13px; color:var(--afdb-gray); margin-bottom:12px;">Raw OpenAPI 3.0 specification for import into tools</p>
+      <code style="display:block; background:var(--code-bg); color:var(--code-text); padding:10px 14px; border-radius:8px; font-size:12px;">http://localhost:4000/api-docs.json</code>
+    </div>
+  </div>
+
+  <div class="callout callout-info">
+    <div class="callout-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Scalar Features</div>
+    <ul style="margin:8px 0 0 16px; font-size:13px;">
+      <li><strong>Try it</strong> — Execute API requests directly from the documentation</li>
+      <li><strong>Code snippets</strong> — Auto-generated examples in curl, JavaScript, Python, and more</li>
+      <li><strong>Search</strong> — Quickly find endpoints across Auth, MFA, and SSO</li>
+      <li><strong>Dark mode</strong> — Toggle between light and dark themes</li>
+      <li><strong>Import to Postman</strong> — Download the JSON spec and import into Postman for advanced testing</li>
+    </ul>
+  </div>
+
+  <h3 id="s8-0b">8.2 System Services &amp; Ports</h3>
+  <p style="text-align:justify;">The AfDB platform consists of <strong>four services</strong> that work together in a microservices architecture:</p>
+
+  <table>
+    <thead><tr><th>Service</th><th>Port</th><th>URL</th><th>Responsibility</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Beta Frontend</strong></td>
+        <td>3000</td>
+        <td><code>http://localhost:3000</code></td>
+        <td>Authentication UI — Login, Signup, MFA verification</td>
+      </tr>
+      <tr>
+        <td><strong>Beta Backend</strong></td>
+        <td>4000</td>
+        <td><code>http://localhost:4000</code></td>
+        <td>Authentication Gateway — MFA, JWT, SSO-IDP, OWASP security</td>
+      </tr>
+      <tr>
+        <td><strong>Core Frontend</strong></td>
+        <td>3001</td>
+        <td><code>http://localhost:3001</code></td>
+        <td>Application UI — Dashboard, Projects, Reports</td>
+      </tr>
+      <tr>
+        <td><strong>Core Backend</strong></td>
+        <td>4001</td>
+        <td><code>http://localhost:4001</code></td>
+        <td>Data Service — Business logic, project management</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3 id="s8-0c">8.3 Service Communication Flow</h3>
+  <div>
+  <p>The diagram below illustrates how the frontends and backends communicate:</p>
+
+  <div class="middleware-stack">
+    <div class="middleware-item" style="background:linear-gradient(135deg, #DCFCE7 0%, #BBF7D0 100%); border-color:#16A34A;">
+      <div style="display:flex; align-items:center; gap:12px; padding-left:1rem;">
+      <div class="middleware-num" style="background:#16A34A; color:#fff;">1</div>
+      <div>
+        <strong>User Browser</strong>
+        <span>Accesses <code>http://localhost:3000</code> (Beta Frontend) or <code>http://localhost:3001</code> (Core Frontend)</span>
+      </div>
+      </div>
+    </div>
+    <div class="middleware-item" style="background:linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%); border-color:#2563EB;">
+      <div style="display:flex; align-items:center; gap:12px; padding-left:1rem;">
+      <div class="middleware-num" style="background:#2563EB; color:#fff;">2</div>
+      <div>
+        <strong>Frontend → Backend API Calls</strong>
+        <span>Frontend sends requests to <code>http://localhost:4000/api/v1/*</code> for authentication (login, MFA, SSO)</span>
+      </div>
+      </div>
+    </div>
+    <div class="middleware-item" style="background:linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%); border-color:#F59E0B;">
+      <div style="display:flex; align-items:center; gap:12px; padding-left:1rem;">
+      <div class="middleware-num" style="background:#F59E0B; color:#fff;">3</div>
+      <div>
+        <strong>JWT Token Flow</strong>
+        <span>Beta Backend issues JWT access/refresh tokens. Frontend stores tokens and includes them in <code>Authorization: Bearer &lt;token&gt;</code> header</span>
+      </div>
+      </div>
+    </div>
+    <div class="middleware-item" style="background:linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 100%); border-color:#9333EA;">
+      <div style="display:flex; align-items:center; gap:12px; padding-left:1rem;">
+      <div class="middleware-num" style="background:#9333EA; color:#fff;">4</div>
+      <div>
+        <strong>Core Backend Authentication</strong>
+        <span>Core Backend validates JWT tokens by verifying with Beta Backend or shared secret. Protected endpoints require valid tokens.</span>
+      </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="callout callout-warning">
+    <div class="callout-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Important: Base URLs</div>
+    <ul style="margin:8px 0 0 16px; font-size:13px;">
+      <li><strong>Frontend API calls:</strong> Use <code>NEXT_PUBLIC_API_URL=http://localhost:4000/api/v1</code></li>
+      <li><strong>API Documentation:</strong> Available at <code>http://localhost:4000/api-docs</code></li>
+      <li><strong>OpenAPI Spec:</strong> Available at <code>http://localhost:4000/api-docs.json</code></li>
+    </ul>
+  </div>
+
+  <h3 id="s8-1">8.4 Authentication Endpoints</h3>
   <table>
     <thead><tr><th>Method</th><th>Endpoint</th><th>Auth</th><th>Description</th></tr></thead>
     <tbody>
-      <tr><td>POST</td><td><code>/api/v1/auth/login</code></td><td>No</td><td>Authenticate with email/password</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/auth/login</code></td><td>No</td><td>Authenticate with email/password (returns <code>mfaRequired: true</code>)</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/auth/send-login-otp</code></td><td>No</td><td>Send login OTP to user's email</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/auth/verify-login-otp</code></td><td>No</td><td>Verify login OTP and receive JWT tokens</td></tr>
       <tr><td>POST</td><td><code>/api/v1/auth/signup</code></td><td>No</td><td>Register new account</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/auth/send-register-otp</code></td><td>No</td><td>Send registration verification OTP</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/auth/verify-register-otp</code></td><td>No</td><td>Verify registration OTP and create account</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/auth/send-reset-otp</code></td><td>No</td><td>Send password reset OTP</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/auth/verify-reset-otp</code></td><td>No</td><td>Verify reset OTP and update password</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/auth/send-otp</code></td><td>Yes</td><td>Send OTP for 2FA setup</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/auth/verify-otp</code></td><td>Yes</td><td>Verify 2FA setup OTP</td></tr>
       <tr><td>POST</td><td><code>/api/v1/auth/verify-mfa</code></td><td>No</td><td>Verify MFA token (TOTP or backup code)</td></tr>
       <tr><td>POST</td><td><code>/api/v1/auth/change-password</code></td><td>Yes</td><td>Change password (revokes all tokens)</td></tr>
       <tr><td>POST</td><td><code>/api/v1/auth/refresh</code></td><td>No</td><td>Refresh access token</td></tr>
@@ -967,7 +1852,7 @@ X-XSS-Protection: 1; mode=block</pre>
     </tbody>
   </table>
 
-  <h3 id="s7-2">7.2 MFA Endpoints</h3>
+  <h3 id="s8-2">8.5 MFA Endpoints</h3>
   <table>
     <thead><tr><th>Method</th><th>Endpoint</th><th>Auth</th><th>Description</th></tr></thead>
     <tbody>
@@ -980,10 +1865,12 @@ X-XSS-Protection: 1; mode=block</pre>
     </tbody>
   </table>
 
-  <h3 id="s7-3">7.3 SSO Endpoints</h3>
+  <h3 id="s8-3">8.6 SSO Endpoints</h3>
   <table>
     <thead><tr><th>Method</th><th>Endpoint</th><th>Auth</th><th>Description</th></tr></thead>
     <tbody>
+      <tr><td>POST</td><td><code>/api/v1/sso/handoff</code></td><td>No</td><td>SSO handoff from external IDP</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/sso/generate</code></td><td>No</td><td>Generate SSO handoff token</td></tr>
       <tr><td>GET</td><td><code>/api/v1/sso/providers</code></td><td>No</td><td>List configured SSO providers</td></tr>
       <tr><td>GET</td><td><code>/api/v1/sso/initiate/:providerId</code></td><td>No</td><td>Start OAuth2 flow</td></tr>
       <tr><td>GET</td><td><code>/api/v1/sso/callback/:providerId</code></td><td>No</td><td>OAuth2 callback handler</td></tr>
@@ -993,17 +1880,17 @@ X-XSS-Protection: 1; mode=block</pre>
 
 <hr>
 
-<!-- ═══════════════ 8. TESTING ═══════════════ -->
+<!-- ═══════════════ 9. TESTING ═══════════════ -->
 <section class="section" id="testing">
-  <div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3h6v4H9z"/><path d="M7 7h10a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z"/><path d="M9 14l2 2 4-4"/></svg> Section 8</div>
+  <div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3h6v4H9z"/><path d="M7 7h10a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z"/><path d="M9 14l2 2 4-4"/></svg> Section 9</div>
   <h2>Testing Scenarios &amp; Results</h2>
 
-  <h3 id="s8-1">8.1 Authentication Tests</h3>
+  <h3 id="s9-1">9.1 Authentication Tests</h3>
   <table>
     <thead><tr><th>#</th><th>Scenario</th><th>Input</th><th>Expected Result</th><th>Actual Result</th><th>Status</th></tr></thead>
     <tbody>
-      <tr><td>1</td><td>Valid login</td><td><code>admin@afdb.org</code> / <code>Password123!</code></td><td>200 OK, JWT issued</td><td>200 OK, role: admin</td><td class="status-pass">PASS</td></tr>
-      <tr><td>2</td><td>Invalid password</td><td><code>admin@afdb.org</code> / <code>wrongpass</code></td><td>401 Invalid credentials</td><td>401 Invalid credentials</td><td class="status-pass">PASS</td></tr>
+      <tr><td>1</td><td>Valid login</td><td><code>afdbadmin@yopmail.com</code> / <code>Admin@123</code></td><td>200 OK, mfaRequired: true</td><td>200 OK, OTP sent</td><td class="status-pass">PASS</td></tr>
+      <tr><td>2</td><td>Invalid password</td><td><code>afdbadmin@yopmail.com</code> / <code>wrongpass</code></td><td>401 Invalid credentials</td><td>401 Invalid credentials</td><td class="status-pass">PASS</td></tr>
       <tr><td>3</td><td>Missing fields</td><td><code>{}</code></td><td>400 Required fields</td><td>400 Email and password required</td><td class="status-pass">PASS</td></tr>
       <tr><td>4</td><td>Account lockout</td><td>5 consecutive wrong passwords</td><td>423 Account locked</td><td>423 Locked, 15min cooldown</td><td class="status-pass">PASS</td></tr>
       <tr><td>5</td><td>Lockout warning</td><td>3rd failed attempt</td><td>Warning shown</td><td>Orange alert, remaining count</td><td class="status-pass">PASS</td></tr>
@@ -1014,7 +1901,7 @@ X-XSS-Protection: 1; mode=block</pre>
     </tbody>
   </table>
 
-  <h3 id="s8-2">8.2 MFA Tests</h3>
+  <h3 id="s9-2">9.2 MFA Tests</h3>
   <table>
     <thead><tr><th>#</th><th>Scenario</th><th>Input</th><th>Expected Result</th><th>Actual Result</th><th>Status</th></tr></thead>
     <tbody>
@@ -1029,7 +1916,7 @@ X-XSS-Protection: 1; mode=block</pre>
     </tbody>
   </table>
 
-  <h3 id="s8-3">8.3 SSO Tests</h3>
+  <h3 id="s9-3">9.3 SSO Tests</h3>
   <table>
     <thead><tr><th>#</th><th>Scenario</th><th>Input</th><th>Expected Result</th><th>Actual Result</th><th>Status</th></tr></thead>
     <tbody>
@@ -1043,7 +1930,7 @@ X-XSS-Protection: 1; mode=block</pre>
     </tbody>
   </table>
 
-  <h3 id="s8-4">8.4 Security Tests</h3>
+  <h3 id="s9-4">9.4 Security Tests</h3>
   <table>
     <thead><tr><th>#</th><th>Scenario</th><th>Input</th><th>Expected</th><th>Actual</th><th>Status</th></tr></thead>
     <tbody>
@@ -1060,7 +1947,7 @@ X-XSS-Protection: 1; mode=block</pre>
     </tbody>
   </table>
 
-  <h3 id="s8-5">8.5 Frontend UX Tests</h3>
+  <h3 id="s9-5">9.5 Frontend UX Tests</h3>
   <table>
     <thead><tr><th>#</th><th>Scenario</th><th>Expected Result</th><th>Status</th></tr></thead>
     <tbody>
@@ -1072,23 +1959,29 @@ X-XSS-Protection: 1; mode=block</pre>
       <tr><td>6</td><td>SSO callback processing</td><td>Loading spinner → success/error state</td><td class="status-pass">PASS</td></tr>
       <tr><td>7</td><td>Dark mode</td><td>Full dark/light theme support</td><td class="status-pass">PASS</td></tr>
       <tr><td>8</td><td>Responsive design</td><td>Mobile, tablet, desktop layouts</td><td class="status-pass">PASS</td></tr>
+      <tr><td>9</td><td>OTP verification screen</td><td>6-digit input with paste support, countdown timer</td><td class="status-pass">PASS</td></tr>
+      <tr><td>10</td><td>OTP paste</td><td>Paste 6-digit code fills all fields automatically</td><td class="status-pass">PASS</td></tr>
+      <tr><td>11</td><td>OTP expiry timer</td><td>10:00 countdown, color changes at 2min and expired</td><td class="status-pass">PASS</td></tr>
+      <tr><td>12</td><td>OTP resend</td><td>New code sent, timer resets to 10:00</td><td class="status-pass">PASS</td></tr>
+      <tr><td>13</td><td>Forgot password flow</td><td>Email → OTP → new password → success</td><td class="status-pass">PASS</td></tr>
+      <tr><td>14</td><td>Registration OTP flow</td><td>Form → OTP → verify → account created</td><td class="status-pass">PASS</td></tr>
     </tbody>
   </table>
 
   <div class="callout callout-success">
     <div class="callout-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg> Test Summary</div>
-    <strong>42 test cases executed</strong> across 5 categories — Authentication (9), MFA (8), SSO (7), Security (10), Frontend UX (8). All tests passed.
+    <p style="text-align:justify;"><strong>48 test cases executed</strong> across 5 categories — Authentication (9), MFA (8), SSO (7), Security (10), Frontend UX (14). All tests passed.</p>
   </div>
 </section>
 
 <hr>
 
-<!-- ═══════════════ 9. DEPLOYMENT ═══════════════ -->
+<!-- ═══════════════ 10. DEPLOYMENT ═══════════════ -->
 <section class="section" id="deployment">
-  <div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg> Section 9</div>
+  <div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg> Section 10</div>
   <h2>Deployment Architecture</h2>
 
-  <h3 id="s9-1">9.1 Required Environment Variables</h3>
+  <h3 id="s10-1">10.1 Required Environment Variables</h3>
   <pre># Server
 PORT=4000
 NODE_ENV=production
@@ -1117,9 +2010,16 @@ MICROSOFT_TENANT_ID=&lt;azure-tenant-id&gt;
 MICROSOFT_REDIRECT_URI=https://api.afdb.org/api/v1/sso/callback/microsoft
 
 # Frontend
-FRONTEND_URL=https://portal.afdb.org</pre>
+FRONTEND_URL=https://portal.afdb.org
 
-  <h3 id="s9-2">9.2 Production Readiness Checklist</h3>
+# SMTP (Email OTP Delivery)
+SMTP_HOST=smtp.afdb.org
+SMTP_PORT=465
+SMTP_USER=noreply@afdb.org
+SMTP_PASSWORD=&lt;smtp-password&gt;
+SMTP_FROM=noreply@afdb.org</pre>
+
+  <h3 id="s10-2">10.2 Production Readiness Checklist</h3>
   <ul class="checklist">
     <li>Set strong <code>JWT_ACCESS_SECRET</code> and <code>JWT_REFRESH_SECRET</code> (min 256-bit)</li>
     <li>Configure MongoDB with authentication and TLS/SSL</li>
@@ -1131,6 +2031,7 @@ FRONTEND_URL=https://portal.afdb.org</pre>
     <li>Enable MongoDB audit logging</li>
     <li>Set up log aggregation (Winston → centralized logging platform)</li>
     <li>Configure health check monitoring on <code>/health</code></li>
+    <li>Configure SMTP credentials for email OTP delivery</li>
     <li>Set up alerting for account lockout events</li>
     <li>Run security penetration testing before go-live</li>
   </ul>
@@ -1138,12 +2039,12 @@ FRONTEND_URL=https://portal.afdb.org</pre>
 
 <hr>
 
-<!-- ═══════════════ 10. COMPLIANCE MATRIX ═══════════════ -->
+<!-- ═══════════════ 11. COMPLIANCE MATRIX ═══════════════ -->
 <section class="section" id="compliance">
-  <div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Section 10</div>
+  <div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Section 11</div>
   <h2>Compliance Matrix</h2>
 
-  <h3 id="s10-1">OWASP Top 10 (2021) — Full Coverage</h3>
+  <h3 id="s11-1">11.1 OWASP Top 10 (2021) — Full Coverage</h3>
   <table>
     <thead><tr><th>Category</th><th>Risk</th><th>Controls Implemented</th><th>Tests</th></tr></thead>
     <tbody>
@@ -1160,7 +2061,7 @@ FRONTEND_URL=https://portal.afdb.org</pre>
     </tbody>
   </table>
 
-  <h3 id="s10-2">Password Policy (OWASP-Compliant)</h3>
+  <h3 id="s11-2">11.2 Password Policy (OWASP-Compliant)</h3>
   <table>
     <thead><tr><th>Requirement</th><th>Rule</th><th>Example</th></tr></thead>
     <tbody>
@@ -1175,12 +2076,12 @@ FRONTEND_URL=https://portal.afdb.org</pre>
 
 <hr>
 
-<!-- ═══════════════ 11. APPENDICES ═══════════════ -->
+<!-- ═══════════════ 12. APPENDICES ═══════════════ -->
 <section class="section" id="appendices">
-  <div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> Section 11</div>
+  <div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> Section 12</div>
   <h2>Appendices</h2>
 
-  <h3 id="s11-a">Appendix A: User Data Model</h3>
+  <h3 id="s12-a">Appendix A: User Data Model</h3>
   <pre>{
   email:            String (unique, indexed)
   passwordHash:     String (bcrypt, 12 rounds)
@@ -1201,7 +2102,7 @@ FRONTEND_URL=https://portal.afdb.org</pre>
   updatedAt:        Date (auto)
 }</pre>
 
-  <h3 id="s11-b">Appendix B: Token Lifecycle</h3>
+  <h3 id="s12-b">Appendix B: Token Lifecycle</h3>
   <div class="arch-diagram">Login → Access Token (30 min) + Refresh Token (30 days)
          │                        │
          ├─ Expired? → Refresh ───┤
@@ -1212,7 +2113,7 @@ FRONTEND_URL=https://portal.afdb.org</pre>
          ├─ Logout → All tokens revoked
          └─ MFA Verified → Tokens issued</div>
 
-  <h3 id="s11-c">Appendix C: Security Event Log Examples</h3>
+  <h3 id="s12-c">Appendix C: Security Event Log Examples</h3>
   <pre>INFO  User created: admin@afdb.org
 INFO  MFA secret generated for user: 6a91c08b...
 INFO  MFA backup codes generated for user: 6a91c08b...
@@ -1223,12 +2124,14 @@ INFO  SSO: auto-provisioning user for user@org.com via google
 INFO  All tokens revoked for user: 6a91c08b...
 INFO  Password changed for user: 6a91c08b...</pre>
 
-  <h3 id="s11-d">Appendix D: Demo Credentials</h3>
+  <h3 id="s12-d">Appendix D: Demo Credentials</h3>
+  <p style="text-align:justify;">All demo accounts use <strong><code>@yopmail.com</code></strong> email addresses. After logging in with credentials, you will receive a 6-digit OTP via email. Visit <a href="https://yopmail.com" target="_blank" rel="noopener" style="color:var(--afdb-green); font-weight:600;">https://yopmail.com</a> and enter the username (e.g., <code>afdbadmin</code>) to check the inbox and retrieve the OTP code.</p>
   <table>
-    <thead><tr><th>Credential</th><th>Value</th><th>Notes</th></tr></thead>
+    <thead><tr><th>Role</th><th>Email</th><th>Password</th><th>Yopmail Inbox</th><th>Permissions</th></tr></thead>
     <tbody>
-      <tr><td>Email</td><td><code>admin@afdb.org</code></td><td>Admin role, MFA-capable</td></tr>
-      <tr><td>Password</td><td><code>Password123!</code></td><td>Meets OWASP password policy</td></tr>
+      <tr><td><strong>Admin</strong></td><td><code>afdbadmin@yopmail.com</code></td><td><code>Admin@123</code></td><td><a href="https://yopmail.com/en/?afdbadmin" target="_blank" rel="noopener" style="color:var(--afdb-green);">yopmail.com/en/?afdbadmin</a></td><td>Full access — all features, user management, monitoring</td></tr>
+      <tr><td><strong>Viewer</strong></td><td><code>afdbaviewer@yopmail.com</code></td><td><code>Viewer@123</code></td><td><a href="https://yopmail.com/en/?afdbaviewer" target="_blank" rel="noopener" style="color:var(--afdb-green);">yopmail.com/en/?afdbaviewer</a></td><td>Read-only — view dashboards, projects, reports</td></tr>
+      <tr><td><strong>Manager</strong></td><td><code>afdbmanager@yopmail.com</code></td><td><code>Manager@123</code></td><td><a href="https://yopmail.com/en/?afdbmanager" target="_blank" rel="noopener" style="color:var(--afdb-green);">yopmail.com/en/?afdbmanager</a></td><td>Project management — create, edit, approve projects (role: staff)</td></tr>
     </tbody>
   </table>
 </section>
@@ -1237,7 +2140,7 @@ INFO  Password changed for user: 6a91c08b...</pre>
 <hr>
 <div style="text-align:center; padding:40px 0 60px; color:var(--afdb-gray);">
   <div style="font-size:11px; text-transform:uppercase; letter-spacing:2px; margin-bottom:8px;">End of Document</div>
-  <p style="font-size:13px; margin-bottom:4px;">AfDB Secure Enterprise Portal — Security Implementation Proposal v1.0</p>
+  <p style="font-size:13px; margin-bottom:4px;">AfDB Secure Enterprise Portal — Security Implementation Proposal v1.1</p>
   <p style="font-size:14px; margin-bottom:20px;">Prepared by <strong style="color:var(--afdb-navy);">Eng. Depute N.Alphonse, PMP&reg;</strong></p>
 
   <!-- Contact Card -->
@@ -1246,8 +2149,8 @@ INFO  Password changed for user: 6a91c08b...</pre>
 
     <!-- Name & Title -->
     <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid var(--afdb-border);">
-      <div style="width:42px; height:42px; border-radius:50%; background:var(--afdb-navy); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <div style="width:42px; height:42px; border-radius:50%; overflow:hidden; flex-shrink:0; border:2px solid var(--afdb-border);">
+        <img src="https://atradezone.ca/deputenalphonse/profile.jpg" alt="Eng. Depute N.Alphonse" style="width:100%; height:100%; object-fit:cover;" />
       </div>
       <div>
         <div style="font-weight:600; color:var(--afdb-navy); font-size:14px;">Eng. Depute N.Alphonse, PMP&reg;</div>
@@ -1258,45 +2161,45 @@ INFO  Password changed for user: 6a91c08b...</pre>
     <!-- Email -->
     <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--afdb-green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-      <a href="mailto:depute@atradezone.ca" style="color:#374151; text-decoration:none; font-size:13px;">depute@atradezone.ca</a>
+      <a href="mailto:depute@atradezone.ca" class="contact-link">depute@atradezone.ca</a>
     </div>
 
     <!-- Phone & Location -->
     <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid var(--afdb-border); flex-wrap:wrap;">
       <div style="display:flex; align-items:center; gap:8px;">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--afdb-green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-        <a href="tel:+250782424845" style="color:#374151; text-decoration:none; font-size:13px;">+250 782 424 845</a>
+        <a href="tel:+250782424845" class="contact-link">+250 782 424 845</a>
       </div>
       <div style="width:1px; height:16px; background:var(--afdb-border);"></div>
       <div style="display:flex; align-items:center; gap:8px;">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--afdb-green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        <span style="color:#374151; font-size:13px;">Kigali, Rwanda</span>
+        <span class="contact-link">Kigali, Rwanda</span>
       </div>
     </div>
 
     <!-- Profile Links -->
     <div style="display:flex; gap:10px; flex-wrap:wrap;">
       <!-- Portfolio -->
-      <a href="https://atradezone.ca/deputenalphonse" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border-radius:8px; border:1px solid var(--afdb-border); background:#fff; text-decoration:none; font-size:12px; color:var(--afdb-navy); font-weight:500; transition:all 0.15s;">
+      <a href="https://atradezone.ca/deputenalphonse" target="_blank" rel="noopener" class="profile-link">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--afdb-green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg>
         Portfolio
       </a>
       <!-- GitHub -->
-      <a href="https://github.com/deputee" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border-radius:8px; border:1px solid var(--afdb-border); background:#fff; text-decoration:none; font-size:12px; color:var(--afdb-navy); font-weight:500; transition:all 0.15s;">
+      <a href="https://github.com/deputee" target="_blank" rel="noopener" class="profile-link">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--afdb-navy)"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
         GitHub
       </a>
       <!-- LinkedIn -->
-      <a href="https://www.linkedin.com/in/deputenalphonse/" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border-radius:8px; border:1px solid var(--afdb-border); background:#fff; text-decoration:none; font-size:12px; color:var(--afdb-navy); font-weight:500; transition:all 0.15s;">
+      <a href="https://www.linkedin.com/in/deputenalphonse/" target="_blank" rel="noopener" class="profile-link">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--afdb-navy)"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
         LinkedIn
       </a>
       <!-- Instagram -->
-      <a href="https://www.instagram.com/deputenalphonse" target="_blank" rel="noopener" class="icon-tip" data-tip="Instagram" style="display:inline-flex; align-items:center; padding:7px 14px; border-radius:8px; border:1px solid var(--afdb-border); background:#fff; text-decoration:none; transition:all 0.15s;">
+      <a href="https://www.instagram.com/deputenalphonse" target="_blank" rel="noopener" class="profile-link-icon icon-tip" data-tip="Instagram">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--afdb-navy)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
       </a>
       <!-- TikTok -->
-      <a href="https://www.tiktok.com/@deputenalphonse" target="_blank" rel="noopener" class="icon-tip" data-tip="TikTok" style="display:inline-flex; align-items:center; padding:7px 14px; border-radius:8px; border:1px solid var(--afdb-border); background:#fff; text-decoration:none; transition:all 0.15s;">
+      <a href="https://www.tiktok.com/@deputenalphonse" target="_blank" rel="noopener" class="profile-link-icon icon-tip" data-tip="TikTok">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--afdb-navy)"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15.2a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.73a8.19 8.19 0 0 0 4.76 1.52v-3.4a4.85 4.85 0 0 1-1-.16z"/></svg>
       </a>
     </div>
@@ -1347,42 +2250,52 @@ INFO  Password changed for user: 6a91c08b...</pre>
       { id: 's4-4', label: '4.4 MFA API Endpoints' },
       { id: 's4-5', label: '4.5 MFA User Flow' }
     ]},
-    'sso': { title: 'SSO-IDP Federation', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg>', subs: [
+    'email-otp': { title: 'Email OTP Verification', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>', subs: [
       { id: 's5-1', label: '5.1 Overview' },
-      { id: 's5-2', label: '5.2 Identity Providers' },
-      { id: 's5-3', label: '5.3 Security Measures' },
-      { id: 's5-4', label: '5.4 SSO API Endpoints' },
-      { id: 's5-5', label: '5.5 Auth Sequence' }
+      { id: 's5-2', label: '5.2 OTP Architecture' },
+      { id: 's5-3', label: '5.3 Authentication Flows' },
+      { id: 's5-4', label: '5.4 Email Templates' },
+      { id: 's5-5', label: '5.5 Frontend OTP UX' },
+      { id: 's5-6', label: '5.6 Yopmail Testing Guide' },
+      { id: 's5-7', label: '5.7 OTP API Endpoints' },
+      { id: 's5-8', label: '5.8 SMTP Configuration' }
+    ]},
+    'sso': { title: 'SSO-IDP Federation', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg>', subs: [
+      { id: 's6-1', label: '6.1 Overview' },
+      { id: 's6-2', label: '6.2 Identity Providers' },
+      { id: 's6-3', label: '6.3 Security Measures' },
+      { id: 's6-4', label: '6.4 SSO API Endpoints' },
+      { id: 's6-5', label: '6.5 Auth Sequence' }
     ]},
     'owasp': { title: 'OWASP Top 10 Compliance', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>', subs: [
-      { id: 's6-1', label: '6.1 Compliance by Category' },
-      { id: 's6-2', label: '6.2 Middleware Stack' }
+      { id: 's7-1', label: '7.1 Compliance by Category' },
+      { id: 's7-2', label: '7.2 Middleware Stack' }
     ]},
     'api': { title: 'API Reference', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>', subs: [
-      { id: 's7-1', label: '7.1 Authentication' },
-      { id: 's7-2', label: '7.2 MFA Endpoints' },
-      { id: 's7-3', label: '7.3 SSO Endpoints' }
+      { id: 's8-1', label: '8.4 Authentication' },
+      { id: 's8-2', label: '8.5 MFA Endpoints' },
+      { id: 's8-3', label: '8.6 SSO Endpoints' }
     ]},
     'testing': { title: 'Testing & Results', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3h6v4H9z"/><path d="M7 7h10a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z"/></svg>', subs: [
-      { id: 's8-1', label: '8.1 Authentication' },
-      { id: 's8-2', label: '8.2 MFA' },
-      { id: 's8-3', label: '8.3 SSO' },
-      { id: 's8-4', label: '8.4 Security' },
-      { id: 's8-5', label: '8.5 Frontend UX' }
+      { id: 's9-1', label: '9.1 Authentication' },
+      { id: 's9-2', label: '9.2 MFA' },
+      { id: 's9-3', label: '9.3 SSO' },
+      { id: 's9-4', label: '9.4 Security' },
+      { id: 's9-5', label: '9.5 Frontend UX' }
     ]},
     'deployment': { title: 'Deployment', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>', subs: [
-      { id: 's9-1', label: '9.1 Environment Variables' },
-      { id: 's9-2', label: '9.2 Readiness Checklist' }
+      { id: 's10-1', label: '10.1 Environment Variables' },
+      { id: 's10-2', label: '10.2 Readiness Checklist' }
     ]},
     'compliance': { title: 'Compliance Matrix', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>', subs: [
-      { id: 's10-1', label: 'OWASP Top 10 Coverage' },
-      { id: 's10-2', label: 'Password Policy' }
+      { id: 's11-1', label: '11.1 OWASP Top 10 Coverage' },
+      { id: 's11-2', label: '11.2 Password Policy' }
     ]},
     'appendices': { title: 'Appendices', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>', subs: [
-      { id: 's11-a', label: 'A: User Data Model' },
-      { id: 's11-b', label: 'B: Token Lifecycle' },
-      { id: 's11-c', label: 'C: Security Event Logs' },
-      { id: 's11-d', label: 'D: Demo Credentials' }
+      { id: 's12-a', label: 'A: User Data Model' },
+      { id: 's12-b', label: 'B: Token Lifecycle' },
+      { id: 's12-c', label: 'C: Security Event Logs' },
+      { id: 's12-d', label: 'D: Demo Credentials' }
     ]}
   };
 
@@ -1449,16 +2362,17 @@ INFO  Password changed for user: 6a91c08b...</pre>
 
   // Also highlight left sidebar active link
   function highlightSidebar(sectionId) {
+    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     const sidebarLinks = document.querySelectorAll('.sidebar-links a');
     sidebarLinks.forEach(function(link) {
       const href = link.getAttribute('href');
       if (href === '#' + sectionId) {
-        link.style.background = 'rgba(255,255,255,0.7)';
+        link.style.background = isDark ? 'rgba(30,35,48,0.7)' : 'rgba(255,255,255,0.7)';
         link.style.color = 'var(--afdb-navy)';
         link.style.fontWeight = '600';
-        link.style.border = '1px solid rgba(229,231,235,0.6)';
+        link.style.border = isDark ? '1px solid rgba(45,51,66,0.6)' : '1px solid rgba(229,231,235,0.6)';
         link.style.borderRadius = '8px';
-        link.style.boxShadow = '0 4px 16px rgba(0,0,0,0.04), 0 1px 4px rgba(0,0,0,0.02)';
+        link.style.boxShadow = isDark ? '0 4px 16px rgba(0,0,0,0.15), 0 1px 4px rgba(0,0,0,0.08)' : '0 4px 16px rgba(0,0,0,0.04), 0 1px 4px rgba(0,0,0,0.02)';
       } else {
         link.style.background = '';
         link.style.color = '';
@@ -1702,5 +2616,61 @@ INFO  Password changed for user: 6a91c08b...</pre>
 </script>
 
 </div>
+
+<!-- Theme Toggle Button -->
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+  <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+  </svg>
+  <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+  </svg>
+  <span class="toggle-label">Dark</span>
+</button>
+
+<script>
+(function() {
+  var toggle = document.getElementById('themeToggle');
+  var label = toggle.querySelector('.toggle-label');
+  var root = document.documentElement;
+
+  // Apply saved theme on load
+  var saved = localStorage.getItem('theme');
+  if (saved === 'dark') {
+    root.setAttribute('data-theme', 'dark');
+    label.textContent = 'Light';
+  }
+
+  toggle.addEventListener('click', function() {
+    var isDark = root.getAttribute('data-theme') === 'dark';
+    if (isDark) {
+      root.removeAttribute('data-theme');
+      localStorage.setItem('theme', 'light');
+      label.textContent = 'Dark';
+    } else {
+      root.setAttribute('data-theme', 'dark');
+      localStorage.setItem('theme', 'dark');
+      label.textContent = 'Light';
+    }
+  });
+})();
+</script>
+
+<!-- Health Check Status -->
+<script>
+(function() {
+  var dot = document.getElementById('healthDot');
+  if (!dot) return;
+  function checkHealth() {
+    fetch('http://localhost:4000/health', { mode: 'cors', cache: 'no-store' })
+      .then(function(r) { return r.ok ? r.json() : Promise.reject(); })
+      .then(function() { dot.className = 'status-dot online'; })
+      .catch(function() { dot.className = 'status-dot offline'; });
+  }
+  checkHealth();
+  setInterval(checkHealth, 30000);
+})();
+</script>
+
 </body>
 </html>

@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
 import { ThemeProvider } from '@/components/theme-provider';
+import { ToastProvider } from '@/components/ui/Toast';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'AfDB Secure Access Portal',
-  description: 'African Development Bank — Enterprise Secure Access Portal with MFA Authentication',
-  icons: { icon: '/icons/favicon.jpg' },
+  title: 'AfDB Enterprise Dashboard',
+  description: 'African Development Bank — Enterprise Data Platform Dashboard',
+  icons: { icon: '/favicon.ico' },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -21,7 +22,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <ToastProvider>
+            {children}
+          </ToastProvider>
         </ThemeProvider>
       </body>
     </html>
