@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>AfDB Secure Enterprise Portal — Security Implementation Proposal</title>
+<title>AfDB Reference Application — Technical Documentation</title>
 <link href="https://fonts.googleapis.com/css2?family=Afacad:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script>
 (function(){var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();
@@ -62,6 +62,11 @@
     box-shadow: 0 2px 8px rgba(0,104,55,0.06);
   }
   .cover-badge svg { width: 14px; height: 14px; }
+  .cover-subtitle {
+    font-size: 13px; text-transform: uppercase; letter-spacing: 3px;
+    color: var(--afdb-gray); font-weight: 500; margin-bottom: 12px;
+    opacity: 0.7;
+  }
   .cover-logo {
     width: 160px; height: 160px;
     display: flex; align-items: center; justify-content: center;
@@ -303,9 +308,8 @@
   .sidebar-action-btn .status-dot {
     position: absolute; top: 4px; right: 4px;
     width: 6px; height: 6px; border-radius: 50%;
-    background: #9CA3AF; transition: background 0.3s;
+    background: #22C55E; transition: background 0.3s;
   }
-  .sidebar-action-btn .status-dot.online { background: #22C55E; }
   .sidebar-action-btn .status-dot.offline { background: #EF4444; }
   [data-theme="dark"] .sidebar-actions { border-top-color: var(--afdb-border); }
   [data-theme="dark"] .sidebar-action-btn {
@@ -907,8 +911,9 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
     Technical Document
   </div>
-  <h1>Secure Enterprise Portal</h1>
-  <h2>Companion technical document to the Proposal for Consultancy Services. <br> Senior Web Frontend Developer Consultant (TCIS). </h2>
+  <div class="cover-subtitle">Reference Application</div>
+  <h1>Technical Documentation</h1>
+  <h2>Supporting document for the Live Reference Application — Section 10: Added Value. <br> Proposal for Consultancy Services — Senior Web Frontend Developer Consultant (TCIS). </h2>
   <div class="cover-divider"></div>
   <div class="cover-meta">
     <div class="cover-meta-item"><div class="label">Version</div><div class="value">1.0</div></div>
@@ -935,9 +940,9 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
       Portfolio
     </a>
-    <a href="https://afdb-beta.atradezone.ca/docs" target="_blank" class="cover-link-btn primary">
+    <a href="https://afdb-beta.atradezone.ca/docs/user-manual.html" target="_blank" class="cover-link-btn primary">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-      Technical Document
+      User Manual Document
     </a>
   </div>
 </div>
@@ -974,7 +979,7 @@
   </div>
   <!-- Quick Action Buttons -->
   <div class="sidebar-actions">
-    <a href="user-manual.html" target="_blank" class="sidebar-action-btn" data-tooltip="User Manual" rel="noopener">
+    <a href="https://afdb-beta.atradezone.ca/docs/user-manual.html" target="_blank" class="sidebar-action-btn" data-tooltip="User Manual" rel="noopener">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
     </a>
     <a href="http://localhost:4000/api-docs" target="_blank" class="sidebar-action-btn" data-tooltip="API Documentation" rel="noopener">
@@ -997,8 +1002,8 @@
         <img src="https://raw.githubusercontent.com/AfDB-Consultant/afdb_beta_frontend/refs/heads/main/src/public/images/afbd-main-logo.png" alt="AfDB Logo" />
       </div>
       <div>
-        <div class="sidebar-footer-brand-text">AfDB Secure Portal</div>
-        <div class="sidebar-footer-brand-sub">Security Proposal v1.1</div>
+        <div class="sidebar-footer-brand-text">AfDB Reference App</div>
+        <div class="sidebar-footer-brand-sub">Technical Documentation v1.0</div>
       </div>
     </div>
     <div class="sidebar-footer-meta">
@@ -1014,8 +1019,8 @@
 <section class="section" id="executive-summary">
   <div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> Section 1</div>
   <h2>Executive Summary</h2>
-  <p style="font-size:14px; color:#6B7280; line-height:1.7; margin-bottom:24px; text-align:justify;">This document is a companion technical proposal to the <strong>Proposal for Consultancy Services — Senior Web Frontend Developer Consultant (TCIS)</strong>. It details the end-to-end security architecture implemented for the AfDB enterprise portal: MFA-protected authentication flows, SSO-IDP federation with Google Workspace and Azure AD, OWASP Top 10 hardened frontend middleware, and a fully documented API layer — demonstrating the secure, production-ready web applications that the consultancy engagement will deliver.</p>
-  <p style="text-align:justify;">The AfDB Secure Enterprise Portal is a modern, security-first web application designed to manage project data, reporting, and operational workflows for the African Development Bank. This proposal details the implementation of <strong>three critical security pillars</strong> that protect the platform and its users — demonstrating a fully functional proof-of-concept with verified results.</p>
+  <p style="font-size:14px; color:#6B7280; line-height:1.7; margin-bottom:24px; text-align:justify;">This document is a companion technical documentation for the <strong>Live Reference Application</strong> described in <strong>Section 10: Added Value</strong> of the <strong>Proposal for Consultancy Services — Senior Web Frontend Developer Consultant (TCIS)</strong>. It details the end-to-end security architecture implemented for the AfDB enterprise portal: MFA-protected authentication flows, SSO-IDP federation with Google Workspace and Azure AD, OWASP Top 10 hardened frontend middleware, and a fully documented API layer — demonstrating the secure, production-ready web applications that the consultancy engagement will deliver.</p>
+  <p style="text-align:justify;">The AfDB Reference Application is a modern, security-first enterprise web system designed to manage project data, reporting, and operational workflows for the African Development Bank. This live reference application <strong>demonstrates in practice</strong> the capabilities described in the consultancy proposal — a working, production-deployed system that evaluators can inspect, interact with, and verify.</p>
 
   <div class="pillar-grid">
     <div class="pillar-card">
@@ -2306,7 +2311,7 @@ INFO  Password changed for user: 6a91c08b...</pre>
 <hr>
 <div style="text-align:center; padding:40px 0 60px; color:var(--afdb-gray);">
   <div style="font-size:11px; text-transform:uppercase; letter-spacing:2px; margin-bottom:8px;">End of Document</div>
-  <p style="font-size:13px; margin-bottom:4px;">AfDB Secure Enterprise Portal — Security Implementation Proposal v1.1</p>
+  <p style="font-size:13px; margin-bottom:4px;">AfDB Reference Application — Technical Documentation v1.0</p>
   <p style="font-size:14px; margin-bottom:20px;">Prepared by <strong style="color:var(--afdb-navy);">Eng. Depute N.Alphonse, PMP&reg;</strong></p>
 
   <!-- Contact Card -->
@@ -2830,8 +2835,8 @@ INFO  Password changed for user: 6a91c08b...</pre>
   function checkHealth() {
     fetch('http://localhost:4000/health', { mode: 'cors', cache: 'no-store' })
       .then(function(r) { return r.ok ? r.json() : Promise.reject(); })
-      .then(function() { dot.className = 'status-dot online'; })
-      .catch(function() { dot.className = 'status-dot offline'; });
+      .then(function() { dot.classList.remove('offline'); })
+      .catch(function() { dot.classList.add('offline'); });
   }
   checkHealth();
   setInterval(checkHealth, 30000);

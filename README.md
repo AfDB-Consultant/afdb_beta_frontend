@@ -32,7 +32,9 @@
 
 > Words on a page can say a lot. Code says more.
 
-This is a **live reference application** — deployed, accessible, and open-source — built to demonstrate the exact patterns described in the consultancy proposal for **Senior Web Frontend Developer Consultant (TCIS)** at the African Development Bank.
+This is a **live reference application** — deployed, accessible, and open-source — built as the core deliverable for **Section 10: Added Value — Live Reference Application** of the consultancy proposal for **Senior Web Frontend Developer Consultant (TCIS)** at the African Development Bank.
+
+Rather than describing capabilities on paper, this application **demonstrates them in practice** — a working, production-deployed enterprise system that evaluators can inspect, interact with, and verify. The accompanying [Technical Documentation](https://afdb-beta.atradezone.ca/docs) and [User Manual](https://afdb-beta.atradezone.ca/docs/user-manual.html) serve as supporting documents for this live reference.
 
 The system currently comprises **172+ source files** across **4 public repositories** in the [AfDB-Consultant](https://github.com/AfDB-Consultant) GitHub organisation, with all 6 Docker services running and continuously deployed via GitHub Actions.
 
@@ -153,18 +155,19 @@ All accounts work on both portals — they share the same authentication backend
 
 ## Proposal Reference
 
-This application supports the consultancy proposal for:
+This application is the deliverable described in **Section 10: Added Value — Live Reference Application** of the consultancy proposal:
 
+**PROPOSAL FOR CONSULTANCY SERVICES**
 **Senior Web Frontend Developer Consultant (TCIS)**
 African Development Bank
 
 | Document | Link |
 |----------|------|
 | **Consultancy Proposal** | [PROPOSAL FOR CONSULTANCY SERVICES — Senior Web Frontend Developer Consultant (TCIS)](https://canva.link/xrt5wv0lx2rcwt5) |
-| **Portfolio** | [atradezone.ca/deputenalphonse](https://atradezone.ca/deputenalphonse) |
-| **Curriculum Vitae** | [Canva CV](https://canva.link/wi9a7piqzdscqqg) |
 | **Technical Documentation** | [afdb-beta.atradezone.ca/docs](https://afdb-beta.atradezone.ca/docs) |
 | **User Manual** | [afdb-beta.atradezone.ca/docs/user-manual.html](https://afdb-beta.atradezone.ca/docs/user-manual.html) |
+| **Portfolio** | [atradezone.ca/deputenalphonse](https://atradezone.ca/deputenalphonse) |
+| **Curriculum Vitae** | [Canva CV](https://canva.link/wi9a7piqzdscqqg) |
 
 ## Contact
 
